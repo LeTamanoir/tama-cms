@@ -1,0 +1,51 @@
+<header>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid" x-data="{ show: false }">
+      <a class="navbar-brand" href="/">Tama-Cms</a>
+
+      <button class="navbar-toggler" type="button" x-on:click="show = !show">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div
+        class="collapse navbar-collapse"
+        :class=" show ? 'show' : ''"
+        id="navbarSupportedContent"
+      >
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a
+              class="nav-link <%- page.current === 'index' ? 'active' : ''%>"
+              href="/"
+            >
+              Home
+            </a>
+          </li>
+
+          <% if (props.authed) { %>
+          <li class="nav-item">
+            <a
+              class="nav-link <%- page.current === 'library' ? 'active' : ''%>"
+              href="/library"
+            >
+              Library
+            </a>
+          </li>
+          <% } %>
+        </ul>
+
+        <div class="ms-auto">
+          <% if (!props.authed) { %>
+
+          <a class="nav-link" href="/login"> Login </a>
+
+          <% } else { %>
+
+          <a href="/logout" class="nav-link link-danger">Logout</a>
+
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>

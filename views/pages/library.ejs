@@ -1,0 +1,59 @@
+<form
+  action="/library?_csrf=<%= props.csrf %>"
+  method="post"
+  x-data="imageViewer()"
+  class="container"
+  enctype="multipart/form-data"
+>
+  <template x-if="imageUrl">
+    <img
+      :src="imageUrl"
+      class="rounded border mb-3"
+      style="width: 8rem; height: 8rem"
+    />
+  </template>
+
+  <template x-if="!imageUrl">
+    <div
+      class="border rounded d-flex align-items-center justify-content-center mb-3"
+      style="width: 8rem; height: 8rem"
+    >
+      preview...
+    </div>
+  </template>
+
+  <div class="col-4">
+    <input
+      type="file"
+      name="upload_image"
+      accept="image/*"
+      autocomplete="off"
+      x-on:change="fileChosen"
+      class="form-control mb-3"
+    />
+
+    <input type="submit" value="Upload" class="btn btn-primary" />
+  </div>
+</form>
+
+<script>
+  function imageViewer() {
+    return {
+      imageUrl: "",
+
+      fileChosen(event) {
+        this.fileToDataUrl(event, (src) => (this.imageUrl = src));
+      },
+
+      fileToDataUrl(event, callback) {
+        if (!event.target.files.length) return;
+
+        let file = event.target.files[0];
+        let reader = new FileReader();
+
+        reader.readAsDataURL(file);
+        reader.onload = (e) => callback(e.target.result);
+      },
+    };
+  }
+</script>
