@@ -2,6 +2,7 @@ const errorHandler = (err, req, res, next) => {
   if (err) {
     switch (err.code) {
       case "EBADCSRFTOKEN":
+        console.log(req.query);
         console.error("bad csrf token !");
         res.sendStatus(403);
         break;

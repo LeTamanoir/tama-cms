@@ -1,0 +1,123 @@
+<div class="container my-4">
+  <div class="row">
+    <ul></ul>
+  </div>
+
+  <nav>
+    <ol class="breadcrumb">
+      <% if(props.path[0] === '') { %>
+
+      <li class="breadcrumb-item active">root</li>
+
+      <% } else { %>
+
+      <li class="breadcrumb-item">
+        <a href="/library?path=/"> root </a>
+      </li>
+
+      <% } %>
+
+      <!--  -->
+
+      <% for(link of props.path.slice(0, -1)) { %>
+
+      <li class="breadcrumb-item">
+        <a href="/library?path=<%= link  %>"> <%= link %> </a>
+      </li>
+
+      <% } %>
+
+      <li class="breadcrumb-item active">
+        <%= props.path[props.path.length - 1] %>
+      </li>
+    </ol>
+  </nav>
+
+  <div class="row g-3 mb-4">
+    <% for (folder of props.folders) { %>
+
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            <i class="bi bi-folder"></i>
+            <%= folder.name %>
+          </h5>
+
+          <div class="d-flex justify-content-between">
+            <a
+              href="/library?path=<%= folder.path %>"
+              class="btn btn-sm btn-primary"
+            >
+              Open
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% } %>
+  </div>
+
+  <div class="row g-3" x-data="imageContainer()">
+    <% for (image of props.images) { %>
+
+    <div
+      class="col-12 col-md-6 col-lg-4 col-xl-3"
+      x-ref="image-<%= image.id %>"
+    >
+      <div class="card">
+        <img
+          src="/uploads/images/<%= image.src %>#<%= image.modified_at %>"
+          alt="uploaded image"
+          class="card-img-top"
+          style="max-height: 16rem; object-fit: cover"
+        />
+
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            <i class="bi bi-image"></i>
+
+            <%= image.name %>
+          </h5>
+
+          <div class="d-flex justify-content-between">
+            <a href="/library/<%= image.id %>" class="btn btn-sm btn-primary">
+              Modify
+            </a>
+
+            <button
+              x-on:click="deleteImage(<%= image.id %>)"
+              class="btn btn-sm btn-outline-danger"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% } %>
+  </div>
+</div>
+
+<script>
+  function imageContainer() {
+    return {
+      deleteImage(image_id) {
+        if (!confirm("Are you sure ?")) return;
+
+        let formData = new URLSearchParams();
+        formData.append("_csrf", "<%= props.csrf %>");
+        formData.append("image_id", image_id);
+
+        fetch("/library", {
+          method: "DELETE",
+          body: formData,
+        }).then((res) => {
+          this.$refs[`image-${image_id}`].remove();
+        });
+      },
+    };
+  }
+</script>
