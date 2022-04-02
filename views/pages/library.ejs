@@ -1,58 +1,129 @@
 <form
   action="/library?_csrf=<%= props.csrf %>"
   method="post"
-  x-data="imageViewer()"
+  accept="image/*"
   class="container"
   enctype="multipart/form-data"
+  x-data="imageViewer()"
 >
-  <template x-if="imageUrl">
-    <img
-      :src="imageUrl"
-      class="rounded border mb-3"
-      style="width: 8rem; height: 8rem"
-    />
-  </template>
+  <h2 class="mb-4">Library</h2>
 
-  <template x-if="!imageUrl">
-    <div
-      class="border rounded d-flex align-items-center justify-content-center mb-3"
-      style="width: 8rem; height: 8rem"
-    >
-      preview...
-    </div>
-  </template>
+  <img
+    x-show="imageUrl"
+    :src="imageUrl"
+    class="rounded border mb-3"
+    style="width: 8rem; height: 8rem"
+  />
+
+  <div
+    x-show="!imageUrl"
+    class="border rounded text-center py-2 mb-3"
+    style="width: 8rem"
+  >
+    preview...
+  </div>
 
   <div class="col-4">
     <input
       type="file"
       name="upload_image"
-      accept="image/*"
       autocomplete="off"
-      x-on:change="fileChosen"
       class="form-control mb-3"
+      x-on:change="fileChosen"
     />
 
-    <input type="submit" value="Upload" class="btn btn-primary" />
+    <div class="alert alert-danger" x-show="error" x-text="error"></div>
+
+    <input
+      type="submit"
+      value="Upload"
+      class="btn btn-primary"
+      :class="error ? 'disabled' : ''"
+    />
   </div>
 </form>
+
+<hr />
+
+<div class="container my-4" x-data="imageContainer()">
+  <div class="row g-3">
+    <template x-for="image of images">
+      <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card">
+          <img
+            :src="'/uploads/images/' + image"
+            :alt="image"
+            class="card-img-top"
+          />
+
+          <div class="card-body">
+            <h5 class="card-title" x-text="image"></h5>
+
+            <button
+              x-on:click="deleteImage(image)"
+              class="btn btn-sm btn-outline-danger"
+            >
+              delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
 
 <script>
   function imageViewer() {
     return {
       imageUrl: "",
+      error: "",
 
       fileChosen(event) {
-        this.fileToDataUrl(event, (src) => (this.imageUrl = src));
+        this.fileToDataUrl(event, (src) => {
+          this.imageUrl = src;
+        });
       },
 
       fileToDataUrl(event, callback) {
         if (!event.target.files.length) return;
 
         let file = event.target.files[0];
+
+        if (!file.name.match(/\.(jpg|JPG|jpeg|JPEG|webp|png|PNG|gif|GIF)$/)) {
+          this.error = "Only image files are allowed";
+          this.imageUrl = "";
+          return;
+        }
+
+        this.error = "";
         let reader = new FileReader();
 
         reader.readAsDataURL(file);
         reader.onload = (e) => callback(e.target.result);
+      },
+    };
+  }
+
+  function imageContainer() {
+    return {
+      // prettier-ignore
+      images: JSON.parse('<%- JSON.stringify(props.images) %>'),
+
+      deleteImage(image) {
+        if (image && confirm("Are you sure ?")) {
+          let formData = new URLSearchParams();
+          formData.append("image", image);
+          formData.append("_csrf", "<%= props.csrf %>");
+
+          fetch("/library", {
+            method: "DELETE",
+            body: formData,
+          }).then((res) => {
+            if (res.ok) {
+              this.images = this.images.filter((img) => img !== image);
+            }
+          });
+        }
       },
     };
   }

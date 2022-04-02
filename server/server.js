@@ -45,6 +45,7 @@ app.use(csurf({ cookie: true }));
 app.use(errorMiddleware);
 
 app.use("/assets", express.static("assets"));
+app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req, res) => {
   const user = req.session.user;
