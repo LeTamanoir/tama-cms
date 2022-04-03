@@ -3,7 +3,7 @@ import path from "path";
 import sqlite from "better-sqlite3";
 const libraryDB = new sqlite("database/library.db", {});
 
-const getImages = (path) => {
+const getImagesOfPath = (path) => {
   const images = libraryDB
     .prepare(
       "select * from `image` where `parent_id` = (select `id` from `folder` where `path` = @path)"
@@ -13,7 +13,23 @@ const getImages = (path) => {
   return images;
 };
 
-const getFolders = (path) => {
+const checkFolderExists = (id) => {
+  const check = libraryDB
+    .prepare("select `id` from `folder` where `id` = @id")
+    .get({ id });
+
+  return !!check?.id;
+};
+
+const checkPathExists = (path) => {
+  const check = libraryDB
+    .prepare("select `id` from `folder` where `path` = @path")
+    .get({ path });
+
+  return !!check?.id;
+};
+
+const getFoldersOfPath = (path) => {
   const folders = libraryDB
     .prepare(
       "select * from `folder` where `parent_id` = (select `id` from `folder` where `path` = @path)"
@@ -21,6 +37,25 @@ const getFolders = (path) => {
     .all({ path });
 
   return folders;
+};
+
+const getFolder = (id) => {
+  const folder = libraryDB
+    .prepare("select * from `folder` where `id` = @id")
+    .get({ id });
+
+  return folder;
+};
+
+const getMoveCandidates = (id) => {
+  const moveCandidates = libraryDB
+    .prepare(
+      "select * from `folder` where `path` not like (select `path` from `folder` where `id` = " +
+        "(select `parent_id` from `folder` where `id` = @id))||'%'"
+    )
+    .all({ id });
+
+  return moveCandidates;
 };
 
 const addImage = ({ name, src, created_at, modified_at }) => {
@@ -55,4 +90,13 @@ const deleteImage = (image_id) => {
   return false;
 };
 
-export { getImages, addImage, getFolders, deleteImage };
+export {
+  getImagesOfPath,
+  addImage,
+  getFoldersOfPath,
+  getFolder,
+  checkFolderExists,
+  checkPathExists,
+  getMoveCandidates,
+  deleteImage,
+};

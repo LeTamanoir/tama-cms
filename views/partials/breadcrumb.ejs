@@ -1,0 +1,23 @@
+<ol class="breadcrumb">
+  <% if(props.path[0] === '') { %>
+  <li class="breadcrumb-item active">root</li>
+  <% } else { %>
+  <li class="breadcrumb-item">
+    <a href="/library"> root </a>
+  </li>
+  <% } %>
+
+  <!--  -->
+
+  <% for(let i = 0; i < props.path.length - 1; i++) { %>
+
+  <li class="breadcrumb-item">
+    <a href="/library?path=/<%= props.path.slice(0, i+1).join("/")  %>"> <%= props.path[i] %> </a>
+  </li>
+
+  <% } %>
+
+  <li class="breadcrumb-item active">
+    <%= props.path[props.path.length - 1] %>
+  </li>
+</ol>

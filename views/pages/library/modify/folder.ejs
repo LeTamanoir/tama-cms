@@ -1,0 +1,46 @@
+<div class="container my-4">
+  <div class="row mb-4">
+    <a
+      href="/library?path=<%= props.folder.path.split('/').slice(0, -1).join('/') %>"
+    >
+      Back
+    </a>
+  </div>
+
+  <form
+    action="/library/modify/folder"
+    method="post"
+    class="bg-light p-3 rounded col-6 border"
+  >
+    <input type="hidden" name="_csrf" value="<%= props.csrf %>" />
+    <input type="hidden" name="id" value="<%= props.folder.id %>" />
+
+    <div class="mb-3">
+      <label for="name" class="form-label">Name :</label>
+      <input
+        id="name"
+        name="name"
+        type="text"
+        class="form-control"
+        value="<%= props.folder.name %>"
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="move" class="form-label">Move folder :</label>
+      <select name="move" id="move" class="form-control">
+        <option value="<%= props.folder.id %>">Don't move</option>
+
+        <% for(move of props.moveCandidates) { %>
+
+        <option value="<%= move.id %>">
+          <%= props.folder.name %> => <%= move.name %> : <%= move.path %>
+        </option>
+
+        <% } %>
+      </select>
+    </div>
+
+    <input type="submit" value="Modify" class="btn btn-primary" />
+  </form>
+</div>
