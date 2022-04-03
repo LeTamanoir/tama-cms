@@ -1,7 +1,9 @@
-<div class="container my-4">
+<div class="container my-4" x-data="responsivePage()">
   <div class="row mb-4">
     <a
-      href="/library?path=<%= props.folder.path.split('/').slice(0, -1).join('/') %>"
+      x-on:click.once="navigate('/library?path=/<%= props.back %>')"
+      class="link-primary"
+      type="button"
     >
       Back
     </a>
@@ -11,6 +13,8 @@
     action="/library/modify/folder"
     method="post"
     class="bg-light p-3 rounded col-6 border"
+    x-data="modifyFolderForm()"
+    x-on:submit.prevent="submit($event, '<%= props.back %>')"
   >
     <input type="hidden" name="_csrf" value="<%= props.csrf %>" />
     <input type="hidden" name="id" value="<%= props.folder.id %>" />
@@ -28,13 +32,13 @@
 
     <div class="mb-3">
       <label for="move" class="form-label">Move folder :</label>
-      <select name="move" id="move" class="form-control">
-        <option value="<%= props.folder.id %>">Don't move</option>
+      <select name="move" id="move" class="form-control" autocomplete="off">
+        <option value="<%= props.folder.parent_id %>">Don't move</option>
 
         <% for(move of props.moveCandidates) { %>
 
         <option value="<%= move.id %>">
-          <%= props.folder.name %> => <%= move.name %> : <%= move.path %>
+          <%= move.name %> : <%= move.path %>
         </option>
 
         <% } %>

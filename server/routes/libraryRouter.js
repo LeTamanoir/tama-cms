@@ -49,7 +49,7 @@ router.get("/library/modify/folder", isAuthed, (req, res) => {
   const { id } = req.query;
 
   if (!id) {
-    res.render("document", {
+    return res.render("document", {
       page: page("error"),
       props: { authed: true, error: "Folder not found" },
     });
@@ -70,6 +70,7 @@ router.get("/library/modify/folder", isAuthed, (req, res) => {
     props: {
       authed: true,
       csrf: req.csrfToken(),
+      back: folder.path.replace("/", "").split("/").slice(0, -1).join("/"),
       folder,
       moveCandidates,
     },
@@ -94,10 +95,25 @@ router.get("/library/add", isAuthed, (req, res) => {
 
 router.post("/library/modify/folder", isAuthed, (req, res) => {
   const { name, move, id } = req.body;
-
   if (!name || !move || !id) return res.sendStatus(403);
 
-  console.log(name, move, id);
+  if (!checkFolderExists(id)) return res.sendStatus(403);
+
+  const folder = getFolder(id);
+
+  if (folder.parent_id !== parseInt(move)) {
+    const moveCandidates = getMoveCandidates(id);
+
+    if (moveCandidates.find((e) => e.id === parseInt(move))) {
+      moveFolder(id, parseInt(move));
+    }
+  }
+
+  if (folder.name !== name) {
+    modifyFolderName(id, name);
+  }
+
+  console.log(folder, { name, move, id });
 
   res.sendStatus(200);
 });

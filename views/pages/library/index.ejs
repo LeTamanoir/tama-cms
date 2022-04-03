@@ -1,4 +1,4 @@
-<div class="container my-4">
+<div class="container my-4" x-data="responsivePage()">
   <nav class="mb-4"><%- include('../../partials/breadcrumb') %></nav>
 
   <div class="row g-3 mb-4">
@@ -13,14 +13,18 @@
           </h5>
 
           <div class="d-flex justify-content-between">
+            <!-- href="/library/modify/folder?type=folder&id=<%= folder.id %>" -->
             <a
-              href="/library/modify/folder?type=folder&id=<%= folder.id %>"
+              x-on:click.once="navigate('/library/modify/folder?type=folder&id=<%= folder.id %>')"
               class="btn btn-sm btn-outline-dark"
-              >Modify</a
             >
+              Modify
+            </a>
 
+            <!-- href="/library?path=<%= folder.path %>" -->
+            <!-- onclick="fetch('/library?path=<%= folder.path %>').then(r => r.text()).then(t => document.body.innerHTML = t)" -->
             <a
-              href="/library?path=<%= folder.path %>"
+              x-on:click="navigate('/library?path=<%= folder.path %>')"
               class="btn btn-sm btn-primary"
             >
               Open
@@ -33,7 +37,8 @@
     <% } %>
   </div>
 
-  <div class="row g-3" x-data="imageContainer()">
+  <div class="row g-3">
+    <!-- x-data="imageContainer()" -->
     <% for (image of props.images) { %>
 
     <div
@@ -62,12 +67,8 @@
               >Modify</a
             >
 
-            <button
-              x-on:click="deleteImage(<%= image.id %>)"
-              class="btn btn-sm btn-outline-danger"
-            >
-              Delete
-            </button>
+            <!-- x-on:click="deleteImage(<%= image.id %>)" -->
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
           </div>
         </div>
       </div>
@@ -78,22 +79,22 @@
 </div>
 
 <script>
-  function imageContainer() {
-    return {
-      deleteImage(image_id) {
-        if (!confirm("Are you sure ?")) return;
+  // function library() {
+  //   return {
+  //     deleteImage(image_id) {
+  //       if (!confirm("Are you sure ?")) return;
 
-        let formData = new URLSearchParams();
-        formData.append("_csrf", "<%= props.csrf %>");
-        formData.append("image_id", image_id);
+  //       let formData = new URLSearchParams();
+  //       formData.append("_csrf", "<%= props.csrf %>");
+  //       formData.append("image_id", image_id);
 
-        fetch("/library", {
-          method: "DELETE",
-          body: formData,
-        }).then((res) => {
-          this.$refs[`image-${image_id}`].remove();
-        });
-      },
-    };
-  }
+  //       fetch("/library", {
+  //         method: "DELETE",
+  //         body: formData,
+  //       }).then((res) => {
+  //         this.$refs[`image-${image_id}`].remove();
+  //       });
+  //     },
+  //   };
+  // }
 </script>

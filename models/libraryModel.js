@@ -47,6 +47,12 @@ const getFolder = (id) => {
   return folder;
 };
 
+const modifyFolderName = (id, name) => {
+  libraryDB
+    .prepare("select * from `folder` where `id` = @id")
+    .run({ id, name });
+};
+
 const getMoveCandidates = (id) => {
   const moveCandidates = libraryDB
     .prepare(
