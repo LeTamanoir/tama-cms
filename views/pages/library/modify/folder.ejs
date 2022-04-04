@@ -13,9 +13,11 @@
     action="/library/modify/folder"
     method="post"
     class="bg-light p-3 rounded border col-12 col-md-6"
-    x-data="modifyFolderForm('<%= props.folder.parent_id %>')"
-    x-on:submit.prevent="submit($event, '<%= props.back %>')"
+    x-data="modifyFolderForm('<%= props.back %>', '<%= props.csrf %>', '<%= props.folder.parent_id %>')"
+    x-on:submit.prevent="submit"
   >
+    <h4 class="mb-3">Mofidy folder</h4>
+
     <input type="hidden" name="_csrf" value="<%= props.csrf %>" />
     <input type="hidden" name="id" value="<%= props.folder.id %>" />
 
@@ -26,6 +28,7 @@
         name="name"
         type="text"
         class="form-control"
+        autocomplete="off"
         value="<%= props.folder.name %>"
       />
     </div>
@@ -53,6 +56,15 @@
 
     <div class="mb-3 alert alert-danger" x-text="error" x-show="error"></div>
 
-    <input type="submit" value="Modify" class="btn btn-primary" />
+    <div class="d-flex">
+      <input type="submit" value="Modify" class="btn btn-primary" />
+
+      <button
+        class="ms-auto btn btn-outline-danger"
+        x-on:click.prevent="deleteFolder('<%= props.folder.id %>')"
+      >
+        Delete
+      </button>
+    </div>
   </form>
 </div>

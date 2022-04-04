@@ -39,6 +39,14 @@ const getFoldersOfPath = (path) => {
   return folders;
 };
 
+const getFolderOfPath = (path) => {
+  const folders = libraryDB
+    .prepare("select * from `folder` where `path` = @path")
+    .get({ path });
+
+  return folders;
+};
+
 const getFolder = (id) => {
   const folder = libraryDB
     .prepare("select * from `folder` where `id` = @id")
@@ -51,6 +59,39 @@ const modifyFolderName = (id, name) => {
   libraryDB
     .prepare("update `folder` set `name` = @name where `id` = @id")
     .run({ id, name });
+};
+
+const checkRenameFolder = (id, name) => {
+  let check = libraryDB
+    .prepare(
+      "select `id` from `folder` where `parent_id` = (select `parent_id` from `folder` where `id` = @id)" +
+        " and `name` = @name and `id` != @id"
+    )
+    .get({ id, name });
+
+  return !!check?.id;
+};
+
+const checkCreateFolder = (id, name) => {
+  let check = libraryDB
+    .prepare(
+      "select `id` from `folder` where `name` = @name and `parent_id` = @id"
+    )
+    .get({ id, name });
+
+  return !check?.id;
+};
+
+const createFolder = (name, path, parent_id) => {
+  libraryDB
+    .prepare(
+      "insert into `folder` (`name`, `path`, `parent_id`) values (@name, @path, @parent_id)"
+    )
+    .run({
+      name,
+      path,
+      parent_id,
+    });
 };
 
 const getMoveCandidates = (id) => {
@@ -98,6 +139,14 @@ const generateFolderPath = (id, move, name) => {
     .run({ newPath, oldPath, id });
 };
 
+const deleteFolder = (id) => {
+  libraryDB
+    .prepare(
+      "delete from `folder` where `path` like (select `path` from `folder` where `id` = @id)||'/%' or `id` = @id"
+    )
+    .run({ id });
+};
+
 const addImage = ({ name, src, created_at, modified_at }) => {
   libraryDB
     .prepare(
@@ -133,7 +182,9 @@ const deleteImage = (image_id) => {
 export {
   getImagesOfPath,
   addImage,
+  deleteFolder,
   getFoldersOfPath,
+  getFolderOfPath,
   getFolder,
   checkFolderExists,
   checkPathExists,
@@ -143,4 +194,7 @@ export {
   checkMoveCandidate,
   generateFolderPath,
   moveFolder,
+  checkRenameFolder,
+  createFolder,
+  checkCreateFolder,
 };

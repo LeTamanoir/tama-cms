@@ -1,0 +1,39 @@
+<div class="container my-4" x-data="responsivePage()">
+  <div class="row mb-4">
+    <a
+      x-on:click.once="navigate('/library?path=/<%= props.back %>')"
+      class="link-primary"
+      type="button"
+    >
+      Back
+    </a>
+  </div>
+
+  <form
+    action="/library/modify/folder"
+    method="post"
+    class="bg-light p-3 rounded border col-12 col-md-6"
+    x-data="addFolderForm('<%= props.back %>')"
+    x-on:submit.prevent="submit"
+  >
+    <h4 class="mb-3">Add folder</h4>
+
+    <input type="hidden" name="_csrf" value="<%= props.csrf %>" />
+    <input type="hidden" name="path" value="<%= props.path %>" />
+
+    <div class="mb-3">
+      <label for="name" class="form-label">Name :</label>
+      <input
+        id="name"
+        name="name"
+        type="text"
+        class="form-control"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="mb-3 alert alert-danger" x-text="error" x-show="error"></div>
+
+    <input type="submit" value="Add folder" class="btn btn-primary" />
+  </form>
+</div>

@@ -11,6 +11,11 @@ import {
   checkMoveCandidate,
   moveFolder,
   generateFolderPath,
+  createFolder,
+  checkCreateFolder,
+  deleteFolder,
+  checkRenameFolder,
+  getFolderOfPath,
 } from "../../models/libraryModel.js";
 import { isAuthed } from "../../middlewares/authMiddleware.js";
 import { uploadImage } from "../../middlewares/uploadMiddleware.js";
@@ -26,9 +31,7 @@ const page = (page) => ({
 router.get("/library", isAuthed, (req, res) => {
   const { path = "/" } = req.query;
 
-  const folderExists = checkPathExists(path);
-
-  if (!folderExists) {
+  if (!checkPathExists(path)) {
     return res.render("document", {
       page: page("error"),
       props: { authed: true, error: "Folder not found" },
@@ -81,21 +84,32 @@ router.get("/library/modify/folder", isAuthed, (req, res) => {
   });
 });
 
-router.get("/library/add", isAuthed, (req, res) => {
+router.get("/library/add/folder", isAuthed, (req, res) => {
+  const { path = "" } = req.query;
+
+  if (!checkPathExists(path)) {
+    return res.render("document", {
+      page: page("error"),
+      props: { authed: true, error: "Path does not exist" },
+    });
+  }
+
   res.render("document", {
-    page: page("add"),
+    page: page("add/folder"),
     props: {
       authed: true,
       csrf: req.csrfToken(),
+      back: path.replace("/", "").split("/").slice(0, -1).join("/"),
+      path,
     },
   });
 });
 
 //
-//  POST
+//  API
 //
 
-router.post("/library/modify/folder", isAuthed, (req, res) => {
+router.put("/library/folder", isAuthed, (req, res) => {
   const { name, move, id } = req.body;
   if (!name || !move || !id) {
     return res.status(400).json({ error: "Please complete all fields" });
@@ -107,7 +121,11 @@ router.post("/library/modify/folder", isAuthed, (req, res) => {
 
   // first rename
   if (folder.name !== name) {
-    modifyFolderName(id, name);
+    if (checkRenameFolder(id, name)) {
+      modifyFolderName(id, name);
+    } else {
+      return res.status(400).json({ error: `"${name}" already exists` });
+    }
   }
 
   // then move
@@ -119,13 +137,44 @@ router.post("/library/modify/folder", isAuthed, (req, res) => {
     } else {
       return res
         .status(400)
-        .json({ error: `"${name}" is already at chosen destination` });
+        .json({ error: `"${name}" already exists at chosen destination` });
     }
   } else {
     // folder not moved
     generateFolderPath(id, move, name);
   }
 
+  res.sendStatus(200);
+});
+
+router.post("/library/folder", isAuthed, (req, res) => {
+  const { name, path } = req.body;
+
+  if (!name || !path) {
+    return res.status(400).json({ error: "Please complete all fields" });
+  }
+
+  if (!checkPathExists(path)) return res.sendStatus(403);
+
+  const parent = getFolderOfPath(path);
+
+  if (checkCreateFolder(parent.id, name)) {
+    createFolder(name, (path !== "/" ? path + "/" : "/") + name, parent.id);
+
+    return res.sendStatus(200);
+  } else {
+    res.status(400).json({ error: `"${name}" already exists in destination` });
+  }
+});
+
+router.delete("/library/folder", isAuthed, (req, res) => {
+  const { id } = req.body;
+
+  if (!id) return res.sendStatus(403);
+
+  if (!checkFolderExists(id)) return res.sendStatus(403);
+
+  deleteFolder(id);
   res.sendStatus(200);
 });
 

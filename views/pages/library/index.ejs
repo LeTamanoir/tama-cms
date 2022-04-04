@@ -1,5 +1,15 @@
 <div class="container my-4" x-data="responsivePage()">
-  <nav class="mb-4"><%- include('../../partials/breadcrumb') %></nav>
+  <nav class="mb-4 d-flex">
+    <%- include('../../partials/breadcrumb') %>
+
+    <a
+      x-on:click.once="navigate('/library/add/folder?path=/<%= props.path.join('/') %>')"
+      type="button"
+      class="ms-auto btn btn-sm btn-primary"
+    >
+      Add folder
+    </a>
+  </nav>
 
   <div class="row g-3 mb-4">
     <% for (folder of props.folders) { %>
