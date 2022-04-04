@@ -7,6 +7,10 @@ import {
   checkPathExists,
   getFolder,
   getMoveCandidates,
+  modifyFolderName,
+  checkMoveCandidate,
+  moveFolder,
+  generateFolderPath,
 } from "../../models/libraryModel.js";
 import { isAuthed } from "../../middlewares/authMiddleware.js";
 import { uploadImage } from "../../middlewares/uploadMiddleware.js";
@@ -88,32 +92,39 @@ router.get("/library/add", isAuthed, (req, res) => {
 });
 
 //
-//
-//
-//
+//  POST
 //
 
 router.post("/library/modify/folder", isAuthed, (req, res) => {
   const { name, move, id } = req.body;
-  if (!name || !move || !id) return res.sendStatus(403);
+  if (!name || !move || !id) {
+    return res.status(400).json({ error: "Please complete all fields" });
+  }
 
   if (!checkFolderExists(id)) return res.sendStatus(403);
 
   const folder = getFolder(id);
 
-  if (folder.parent_id !== parseInt(move)) {
-    const moveCandidates = getMoveCandidates(id);
-
-    if (moveCandidates.find((e) => e.id === parseInt(move))) {
-      moveFolder(id, parseInt(move));
-    }
-  }
-
+  // first rename
   if (folder.name !== name) {
     modifyFolderName(id, name);
   }
 
-  console.log(folder, { name, move, id });
+  // then move
+  if (folder.parent_id !== parseInt(move)) {
+    // folder moved
+    if (checkMoveCandidate(id, move, name)) {
+      moveFolder(id, move, name);
+      generateFolderPath(id, move, name);
+    } else {
+      return res
+        .status(400)
+        .json({ error: `"${name}" is already at chosen destination` });
+    }
+  } else {
+    // folder not moved
+    generateFolderPath(id, move, name);
+  }
 
   res.sendStatus(200);
 });

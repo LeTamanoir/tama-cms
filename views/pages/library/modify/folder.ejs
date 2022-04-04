@@ -12,8 +12,8 @@
   <form
     action="/library/modify/folder"
     method="post"
-    class="bg-light p-3 rounded col-6 border"
-    x-data="modifyFolderForm()"
+    class="bg-light p-3 rounded border col-12 col-md-6"
+    x-data="modifyFolderForm('<%= props.folder.parent_id %>')"
     x-on:submit.prevent="submit($event, '<%= props.back %>')"
   >
     <input type="hidden" name="_csrf" value="<%= props.csrf %>" />
@@ -32,18 +32,26 @@
 
     <div class="mb-3">
       <label for="move" class="form-label">Move folder :</label>
-      <select name="move" id="move" class="form-control" autocomplete="off">
+      <select
+        name="move"
+        id="move"
+        class="form-control"
+        autocomplete="off"
+        x-on:change="setMoveTo"
+      >
         <option value="<%= props.folder.parent_id %>">Don't move</option>
 
         <% for(move of props.moveCandidates) { %>
 
-        <option value="<%= move.id %>">
-          <%= move.name %> : <%= move.path %>
+        <option value="<%= move.id %>" t-move-to="<%= move.path %>">
+          => <%= move.name %> (<%= move.path %>)
         </option>
 
         <% } %>
       </select>
     </div>
+
+    <div class="mb-3 alert alert-danger" x-text="error" x-show="error"></div>
 
     <input type="submit" value="Modify" class="btn btn-primary" />
   </form>

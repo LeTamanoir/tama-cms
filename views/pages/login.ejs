@@ -1,40 +1,42 @@
-<form
-  action="/login"
-  method="post"
-  class="container col-12 col-md-6 col-lg-4 col-xl-3 bg-light p-3 rounded border"
-  x-data="{ show: false }"
->
-  <h2 class="mb-3">Login</h2>
+<div class="my-4">
+  <form
+    action="/login"
+    method="post"
+    class="container col-12 col-md-6 col-lg-4 col-xl-3 bg-light p-3 rounded border"
+    x-data="{ show: false }"
+  >
+    <h2 class="mb-3">Login</h2>
 
-  <input type="hidden" name="_csrf" value="<%= props.csrf %>" />
+    <input type="hidden" name="_csrf" value="<%= props.csrf %>" />
 
-  <div class="mb-3">
-    <input
-      type="text"
-      name="username"
-      class="form-control"
-      autocomplete="off"
-      placeholder="username"
-    />
-  </div>
+    <div class="mb-3">
+      <input
+        type="text"
+        name="username"
+        class="form-control"
+        autocomplete="off"
+        placeholder="username"
+      />
+    </div>
 
-  <div class="mb-3 input-group">
-    <input
-      :type="show ? 'text' : 'password'"
-      name="password"
-      class="form-control"
-      autocomplete="off"
-      placeholder="password"
-    />
+    <div class="mb-3 input-group">
+      <input
+        :type="show ? 'text' : 'password'"
+        name="password"
+        class="form-control"
+        autocomplete="off"
+        placeholder="password"
+      />
 
-    <a x-on:click="show = !show" class="input-group-text text-reset py-0">
-      <i class="bi fs-5" :class="show ? 'bi-eye-slash' : 'bi-eye'"></i>
-    </a>
-  </div>
+      <a x-on:click="show = !show" class="input-group-text text-reset py-0">
+        <i class="bi fs-5" :class="show ? 'bi-eye-slash' : 'bi-eye'"></i>
+      </a>
+    </div>
 
-  <% if (props.error) { %>
-  <div class="alert alert-danger"><%- props.error %></div>
-  <%}%>
+    <% if (props.error) { %>
+    <div class="alert alert-danger"><%- props.error %></div>
+    <%}%>
 
-  <input type="submit" value="Login" class="btn btn-primary" />
-</form>
+    <input type="submit" value="Login" class="btn btn-primary" />
+  </form>
+</div>

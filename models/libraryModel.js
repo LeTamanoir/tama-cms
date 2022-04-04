@@ -49,19 +49,53 @@ const getFolder = (id) => {
 
 const modifyFolderName = (id, name) => {
   libraryDB
-    .prepare("select * from `folder` where `id` = @id")
+    .prepare("update `folder` set `name` = @name where `id` = @id")
     .run({ id, name });
 };
 
 const getMoveCandidates = (id) => {
   const moveCandidates = libraryDB
     .prepare(
-      "select * from `folder` where `path` not like (select `path` from `folder` where `id` = " +
-        "(select `parent_id` from `folder` where `id` = @id))||'%'"
+      "select * from `folder` where `path` not like (select `path` from `folder` where `id` = @id)||'/%'" +
+        " and `id` != (select `parent_id` from `folder` where `id` = @id) and `id` != @id"
     )
     .all({ id });
-
   return moveCandidates;
+};
+
+const checkMoveCandidate = (id, move, name) => {
+  let check = libraryDB
+    .prepare(
+      "select * from `folder` where `path` not like (select `path` from `folder` where `id` = @id)||'/%'" +
+        " and `id` = @move and not exists (select 1 from `folder` where `parent_id` = @move and `name` = @name)"
+    )
+    .get({ id, name, move });
+
+  return !!check?.id;
+};
+
+const moveFolder = (id, move) => {
+  libraryDB
+    .prepare("update `folder` set `parent_id` = @move where `id` = @id")
+    .run({ move, id });
+};
+
+const generateFolderPath = (id, move, name) => {
+  let oldPath = libraryDB
+    .prepare("select `path` from `folder` where `id` = @id")
+    .get({ id }).path;
+
+  let _path = libraryDB
+    .prepare("select `path` from `folder` where `id` = @move")
+    .get({ move }).path;
+
+  let newPath = (_path !== "/" ? _path + "/" : "/") + name;
+
+  libraryDB
+    .prepare(
+      "update `folder` set `path` = replace(`path`, @oldPath, @newPath) where `path` like @oldPath||'/%' or `path` = @oldPath"
+    )
+    .run({ newPath, oldPath, id });
 };
 
 const addImage = ({ name, src, created_at, modified_at }) => {
@@ -104,5 +138,9 @@ export {
   checkFolderExists,
   checkPathExists,
   getMoveCandidates,
+  modifyFolderName,
   deleteImage,
+  checkMoveCandidate,
+  generateFolderPath,
+  moveFolder,
 };
