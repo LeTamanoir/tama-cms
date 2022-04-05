@@ -1,14 +1,18 @@
-<main>
-  <% if (props.authed) { %>
+<div class="container py-4">
+  <div class="p-5 mb-4 bg-light rounded-3">
+    <h1 class="display-5 fw-bold">Tama-cms</h1>
 
-  <p>Hello chad Monster</p>
-  <a href="/logout">logout</a>
+    <% if (props.authed) { %>
 
-  <% } else { %>
+    <p>Hello chad Monster</p>
+    <a href="/logout">logout</a>
 
-  <p>Please login</p>
+    <% } else { %>
 
-  <a href="/login">login</a>
+    <p>Please login</p>
 
-  <% } %>
-</main>
+    <a href="/login">login</a>
+
+    <% } %>
+  </div>
+</div>
