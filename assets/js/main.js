@@ -25,6 +25,81 @@ function navigate(url, fromPopState = false) {
     .catch((e) => console.log(e));
 }
 
+function addFolderForm(back) {
+  return {
+    error: "",
+    nameValid: null,
+
+    back,
+
+    validateName(e) {
+      if (e.target.value.length === 0) {
+        this.error = "";
+        this.nameValid = null;
+        return;
+      }
+
+      if (new RegExp(/[^\w]|\s/g).test(e.target.value)) {
+        this.error = "Name must match alphanumeric chars and no whitespace";
+        this.nameValid = false;
+      } else {
+        this.error = "";
+        this.nameValid = true;
+      }
+    },
+
+    submit(e) {
+      let formData = new URLSearchParams(new FormData(e.target));
+
+      fetch("/library/folder", {
+        method: "POST",
+        body: formData,
+      }).then((res) => {
+        if (res.ok) {
+          navigate(`/library?path=/${this.back}`);
+        } else {
+          res.json().then((data) => {
+            this.error = data.error;
+          });
+        }
+      });
+    },
+  };
+}
+
+function manageAlert() {
+  return {
+    show: false,
+    title: "",
+    content: "",
+    callback: () => {},
+
+    showAlert(e) {
+      this.show = true;
+
+      this.title = e.detail.title;
+      this.content = e.detail.content;
+      this.callback = e.detail.callback;
+    },
+
+    clearAlert() {
+      this.show = false;
+      this.title = "";
+      this.content = "";
+    },
+
+    cancelAlert() {
+      this.clearAlert();
+    },
+
+    confirmAlert() {
+      this.clearAlert();
+
+      this.callback();
+    },
+  };
+}
+
 function modifyFolderForm(back, _csrf, parent_id, defautl_name) {
   return {
     nameValid: null,
@@ -103,81 +178,6 @@ function modifyFolderForm(back, _csrf, parent_id, defautl_name) {
           });
         },
       });
-    },
-  };
-}
-
-function addFolderForm(back) {
-  return {
-    error: "",
-    nameValid: null,
-
-    back,
-
-    validateName(e) {
-      if (e.target.value.length === 0) {
-        this.error = "";
-        this.nameValid = null;
-        return;
-      }
-
-      if (new RegExp(/[^\w]|\s/g).test(e.target.value)) {
-        this.error = "Name must match alphanumeric chars and no whitespace";
-        this.nameValid = false;
-      } else {
-        this.error = "";
-        this.nameValid = true;
-      }
-    },
-
-    submit(e) {
-      let formData = new URLSearchParams(new FormData(e.target));
-
-      fetch("/library/folder", {
-        method: "POST",
-        body: formData,
-      }).then((res) => {
-        if (res.ok) {
-          navigate(`/library?path=/${this.back}`);
-        } else {
-          res.json().then((data) => {
-            this.error = data.error;
-          });
-        }
-      });
-    },
-  };
-}
-
-function manageAlert() {
-  return {
-    show: false,
-    title: "",
-    content: "",
-    callback: () => {},
-
-    showAlert(e) {
-      this.show = true;
-
-      this.title = e.detail.title;
-      this.content = e.detail.content;
-      this.callback = e.detail.callback;
-    },
-
-    clearAlert() {
-      this.show = false;
-      this.title = "";
-      this.content = "";
-    },
-
-    cancelAlert() {
-      this.clearAlert();
-    },
-
-    confirmAlert() {
-      this.clearAlert();
-
-      this.callback();
     },
   };
 }

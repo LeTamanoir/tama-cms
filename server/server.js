@@ -44,7 +44,7 @@ app.use(
 app.use(csurf({ cookie: true }));
 app.use(errorMiddleware);
 
-app.use("/assets", express.static("assets"));
+app.use("/assets", express.static("assets/dist"));
 app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req, res) => {
