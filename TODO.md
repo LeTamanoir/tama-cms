@@ -1,0 +1,2 @@
+- rename problem with complicated name in nested dirs
+- add regex to prevent quotes in folders name

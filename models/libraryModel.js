@@ -69,7 +69,7 @@ const checkRenameFolder = (id, name) => {
     )
     .get({ id, name });
 
-  return !!check?.id;
+  return !check?.id;
 };
 
 const checkCreateFolder = (id, name) => {

@@ -13,7 +13,7 @@
     action="/library/modify/folder"
     method="post"
     class="bg-light p-3 rounded border col-12 col-md-6"
-    x-data="modifyFolderForm('<%= props.back %>', '<%= props.csrf %>', '<%= props.folder.parent_id %>')"
+    x-data="modifyFolderForm('<%= props.back %>', '<%= props.csrf %>', '<%= props.folder.parent_id %>', '<%= props.folder.name %>')"
     x-on:submit.prevent="submit"
   >
     <h4 class="mb-3">Mofidy folder</h4>
@@ -30,6 +30,8 @@
         class="form-control"
         autocomplete="off"
         value="<%= props.folder.name %>"
+        x-bind:class="{'is-invalid': nameValid === false, 'is-valid': nameValid }"
+        x-on:input="validateName"
       />
     </div>
 
@@ -57,7 +59,12 @@
     <div class="mb-3 alert alert-danger" x-text="error" x-show="error"></div>
 
     <div class="d-flex">
-      <input type="submit" value="Modify" class="btn btn-primary" />
+      <input
+        type="submit"
+        value="Modify"
+        class="btn btn-primary"
+        x-bind:class="{ 'disabled': !nameValid && !moveTo }"
+      />
 
       <button
         class="ms-auto btn btn-outline-danger"

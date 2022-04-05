@@ -23,7 +23,6 @@
           </h5>
 
           <div class="d-flex justify-content-between">
-            <!-- href="/library/modify/folder?type=folder&id=<%= folder.id %>" -->
             <a
               x-on:click.once="navigate('/library/modify/folder?type=folder&id=<%= folder.id %>')"
               class="btn btn-sm btn-outline-dark"
@@ -31,8 +30,6 @@
               Modify
             </a>
 
-            <!-- href="/library?path=<%= folder.path %>" -->
-            <!-- onclick="fetch('/library?path=<%= folder.path %>').then(r => r.text()).then(t => document.body.innerHTML = t)" -->
             <a
               x-on:click="navigate('/library?path=<%= folder.path %>')"
               class="btn btn-sm btn-primary"

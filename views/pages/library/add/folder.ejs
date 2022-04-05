@@ -29,11 +29,18 @@
         type="text"
         class="form-control"
         autocomplete="off"
+        x-bind:class="{'is-invalid': nameValid === false, 'is-valid': nameValid }"
+        x-on:input="validateName"
       />
     </div>
 
     <div class="mb-3 alert alert-danger" x-text="error" x-show="error"></div>
 
-    <input type="submit" value="Add folder" class="btn btn-primary" />
+    <input
+      type="submit"
+      value="Add folder"
+      class="btn btn-primary"
+      x-bind:class="{ 'disabled': !nameValid }"
+    />
   </form>
 </div>

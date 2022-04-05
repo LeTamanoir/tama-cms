@@ -115,6 +115,7 @@ router.put("/library/folder", isAuthed, (req, res) => {
     return res.status(400).json({ error: "Please complete all fields" });
   }
 
+  if (new RegExp(/[^\w]|\s/g).test(name)) return res.sendStatus(403);
   if (!checkFolderExists(id)) return res.sendStatus(403);
 
   const folder = getFolder(id);
@@ -131,6 +132,11 @@ router.put("/library/folder", isAuthed, (req, res) => {
   // then move
   if (folder.parent_id !== parseInt(move)) {
     // folder moved
+
+    console.log(checkMoveCandidate(id, move, name));
+
+    return res.sendStatus(200);
+
     if (checkMoveCandidate(id, move, name)) {
       moveFolder(id, move, name);
       generateFolderPath(id, move, name);
