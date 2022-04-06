@@ -36,7 +36,6 @@ function addFolderForm(path) {
   return {
     error: "",
     nameValid: null,
-
     path,
 
     validateName(e) {
@@ -222,12 +221,13 @@ function manageAlert() {
   };
 }
 
-function folderGrid(_csrf, path) {
+function movableGrid(_csrf, path) {
   return {
     current: null,
     current_name: "",
     current_over: null,
     dragging: false,
+    type: "",
     path,
     _csrf,
 
@@ -243,17 +243,98 @@ function folderGrid(_csrf, path) {
       if (this.current === this.current_over) return;
 
       let formData = new URLSearchParams();
-      formData.append("name", this.current_name);
-      formData.append("move", this.current_over);
-      formData.append("id", this.current);
-      formData.append("_csrf", this._csrf);
 
-      fetch("/library/folder", {
-        method: "PUT",
+      if (this.type === "folder") {
+        formData.append("name", this.current_name);
+        formData.append("move", this.current_over);
+        formData.append("id", this.current);
+        formData.append("_csrf", this._csrf);
+
+        fetch("/library/folder", {
+          method: "PUT",
+          body: formData,
+        }).then((res) => {
+          if (res.ok) {
+            navigate(`/library?path=/${this.path}`);
+          }
+        });
+      }
+
+      if (this.type === "image") {
+        formData.append("name", this.current_name);
+        formData.append("move", this.current_over);
+        formData.append("id", this.current);
+        formData.append("_csrf", this._csrf);
+
+        fetch("/library/image", {
+          method: "PUT",
+          body: formData,
+        }).then((res) => {
+          if (res.ok) {
+            navigate(`/library?path=/${this.path}`);
+          }
+        });
+      }
+    },
+
+    deleteImage(id) {
+      this.$dispatch("alert", {
+        title: "Delete image",
+        content: "Are you sure you want to delete this image ?",
+        callback: () => {
+          let formData = new URLSearchParams();
+          formData.append("_csrf", _csrf);
+          formData.append("id", id);
+
+          fetch("/library/image", {
+            method: "DELETE",
+            body: formData,
+          }).then((res) => {
+            if (res.ok) {
+              navigate(`/library?path=/${this.path}`);
+            }
+          });
+        },
+      });
+    },
+  };
+}
+
+function addImageForm(path, _csrf) {
+  return {
+    imageData: "",
+    error: "",
+    path,
+    _csrf,
+
+    fileChosen(event) {
+      this.fileToDataUrl(event, (src) => (this.imageData = src));
+    },
+
+    fileToDataUrl(event, callback) {
+      if (!event.target.files.length) return;
+
+      let file = event.target.files[0];
+      let reader = new FileReader();
+
+      reader.readAsDataURL(file);
+      reader.onload = (e) => callback(e.target.result);
+    },
+
+    submit(event) {
+      let formData = new FormData(event.target);
+
+      fetch(`/library/image?path=${this.path}`, {
+        method: "POST",
+        headers: { "csrf-token": this._csrf },
         body: formData,
       }).then((res) => {
         if (res.ok) {
-          navigate(`/library?path=/${this.path}`);
+          navigate(`/library?path=${this.path}`);
+        } else {
+          res.json().then((data) => {
+            this.error = data.error;
+          });
         }
       });
     },

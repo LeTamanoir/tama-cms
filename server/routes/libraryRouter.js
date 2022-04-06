@@ -8,7 +8,7 @@ import {
   getFolder,
   getMoveCandidates,
   modifyFolderName,
-  checkMoveCandidate,
+  checkMoveFolderCandidate,
   moveFolder,
   generateFolderPath,
   createFolder,
@@ -17,6 +17,9 @@ import {
   checkRenameFolder,
   getFolderOfPath,
   getParentOfPath,
+  addImage,
+  moveImage,
+  checkImageExists,
 } from "../../models/libraryModel.js";
 import { isAuthed } from "../../middlewares/authMiddleware.js";
 import { uploadImage } from "../../middlewares/uploadMiddleware.js";
@@ -109,6 +112,27 @@ router.get("/library/add/folder", isAuthed, (req, res) => {
   });
 });
 
+router.get("/library/add/image", isAuthed, (req, res) => {
+  const { path = "" } = req.query;
+
+  if (!checkPathExists(path)) {
+    return res.render("document", {
+      page: page("error"),
+      props: { authed: true, error: "Path does not exist" },
+    });
+  }
+
+  res.render("document", {
+    page: page("add/image"),
+    props: {
+      authed: true,
+      csrf: req.csrfToken(),
+      back: path.replace("/", "").split("/").slice(0, -1).join("/"),
+      path,
+    },
+  });
+});
+
 //
 //  API
 //
@@ -136,7 +160,7 @@ router.put("/library/folder", isAuthed, (req, res) => {
   // then move
   if (folder.id !== parseInt(move)) {
     if (folder.parent_id !== parseInt(move)) {
-      if (checkMoveCandidate(id, move, name)) {
+      if (checkMoveFolderCandidate(id, move, name)) {
         moveFolder(id, move, name);
         generateFolderPath(id, move, name);
       } else {
@@ -184,15 +208,54 @@ router.delete("/library/folder", isAuthed, (req, res) => {
   res.sendStatus(200);
 });
 
-// router.post("/library", isAuthed, (req, res) => {
-//   uploadImage(req, res, (err) => {
-//     if (err) {
-//       return res.sendStatus(403);
-//     }
+router.post("/library/image", isAuthed, (req, res) => {
+  const { path } = req.query;
 
-//     res.redirect("/library");
-//   });
-// });
+  if (!path) return res.sendStatus(403);
+  if (!checkPathExists(path)) return res.sendStatus(403);
+
+  let folder = getFolderOfPath(path);
+
+  uploadImage(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+
+    let image_name = req.UPLOAD_IMAGE_NAME;
+    let image_src = req.UPLOAD_IMAGE_SRC;
+    addImage(image_name, image_src, folder.id);
+
+    return res.sendStatus(200);
+  });
+});
+
+router.put("/library/image", isAuthed, (req, res) => {
+  const { name, move, id } = req.body;
+  if (!name || !move || !id) {
+    return res.sendStatus(403);
+  }
+
+  // return res.status(400).json({ error: "Please complete all fields" });
+
+  if (!checkFolderExists(move) || !checkImageExists(id)) {
+    return res.sendStatus(403);
+  }
+
+  moveImage(id, move);
+
+  res.sendStatus(200);
+});
+
+router.delete("/library/image", isAuthed, (req, res) => {
+  const { id } = req.body;
+
+  if (!id) return res.sendStatus(403);
+  if (!checkImageExists(id)) return res.sendStatus(403);
+
+  deleteImage(id);
+
+  res.sendStatus(200);
+});
 
 // router.put("/library", isAuthed, (req, res) => {
 //   uploadImage(req, res, (err) => {

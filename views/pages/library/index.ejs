@@ -5,108 +5,138 @@
     <a
       x-on:click.once="navigate('/library/add/folder?path=/<%= props.path.join('/') %>')"
       type="button"
-      class="ms-auto btn btn-sm btn-primary"
+      class="ms-auto btn btn-sm btn-primary py-0"
     >
-      Add folder
+      <i class="bi bi-folder-fill fs-4"></i>
+    </a>
+
+    <a
+      x-on:click.once="navigate('/library/add/image?path=/<%= props.path.join('/') %>')"
+      type="button"
+      class="ms-2 btn btn-sm btn-primary py-0"
+    >
+      <i class="bi bi-image fs-4"></i>
     </a>
   </nav>
 
   <div
-    class="row g-3 mb-4"
-    x-data="folderGrid('<%= props.csrf %>', '<%= props.path.join('/') %>')"
-    x-on:dragend.prevent="dragging = false"
+    x-data="movableGrid('<%= props.csrf %>', '<%= props.path.join('/') %>')"
+    x-on:dragend.prevent="
+      dragging = false;
+      current = '';
+      current_name = '';
+      type = ''
+    "
     x-on:drop="dragging = false"
     x-on:drop.prevent="handleMove"
   >
-    <% if(props.path[0] !== '') { %>
-    <div class="col-12 mb-3" x-show="dragging">
-      <div
-        class="col-3 p-2 border rounded"
-        x-bind:class="{'border-2 border-primary': isOver('<%= props.parent.id %>')}"
-        x-on:dragover.prevent="current_over = '<%= props.parent.id %>'"
-        x-on:dragleave.prevent="current_over = null"
-      >
-        Move up
+    <div class="row g-3 mb-4">
+      <% if(props.path[0] !== '') { %>
+      <div class="col-12 mb-3" x-show="dragging">
+        <div
+          class="col-3 p-2 border rounded"
+          x-bind:class="{'border-2 border-primary': isOver('<%= props.parent.id %>')}"
+          x-on:dragover.prevent="current_over = '<%= props.parent.id %>'"
+          x-on:dragleave.prevent="current_over = null"
+        >
+          Move up
+        </div>
       </div>
-    </div>
 
-    <% } %> <% for (folder of props.folders) { %>
+      <% } %> <% for (folder of props.folders) { %>
 
-    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-      <div
-        class="card"
-        draggable="true"
-        style="cursor: move"
-        x-bind:class="{'border-2 border-primary': isOver('<%= folder.id %>')}"
-        x-on:dragover.prevent="current_over = '<%= folder.id %>'"
-        x-on:dragstart.self="current = '<%= folder.id %>'; current_name = '<%= folder.name %>'; dragging = true"
-        x-on:dragleave.prevent="current_over = null"
-      >
-        <div class="card-body">
-          <h5 class="card-title mb-3">
-            <i class="bi bi-folder"></i>
-            <%= folder.name %>
-          </h5>
+      <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <div
+          class="card"
+          draggable="true"
+          style="cursor: move"
+          x-bind:class="{'border-2 border-primary': isOver('<%= folder.id %>')}"
+          x-on:dragover.prevent="current_over = '<%= folder.id %>'"
+          x-on:dragstart.self="
+            current = '<%= folder.id %>';
+            current_name = '<%= folder.name %>';
+            dragging = true;
+            type = 'folder'
+          "
+          x-on:dragleave.prevent="current_over = null"
+        >
+          <div class="card-body">
+            <h5 class="card-title mb-3">
+              <i class="bi bi-folder"></i>
+              <%= folder.name %>
+            </h5>
 
-          <div class="d-flex justify-content-between">
-            <a
-              x-on:click.once="navigate('/library/modify/folder?type=folder&id=<%= folder.id %>')"
-              class="btn btn-sm btn-outline-dark"
-            >
-              Modify
-            </a>
+            <div class="d-flex justify-content-between">
+              <a
+                x-on:click.once="navigate('/library/modify/folder?type=folder&id=<%= folder.id %>')"
+                class="btn btn-sm btn-outline-dark"
+              >
+                Modify
+              </a>
 
-            <a
-              x-on:click="navigate('/library?path=<%= folder.path %>')"
-              class="btn btn-sm btn-primary"
-            >
-              Open
-            </a>
+              <a
+                x-on:click="navigate('/library?path=<%= folder.path %>')"
+                class="btn btn-sm btn-primary"
+              >
+                Open
+              </a>
+            </div>
           </div>
         </div>
       </div>
+
+      <% } %>
     </div>
 
-    <% } %>
-  </div>
+    <div class="row g-3">
+      <% for (image of props.images) { %>
 
-  <div class="row g-3">
-    <% for (image of props.images) { %>
+      <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <div
+          class="card"
+          style="cursor: move"
+          draggable="true"
+          x-on:dragstart.self="
+            current = '<%= image.id %>';
+            current_name = '<%= image.name %>';
+            dragging = true;
+            type = 'image'
+          "
+        >
+          <div
+            alt="uploaded image"
+            style="
+              background-image: url('/uploads/images/<%= image.src %>#<%= image.modified_at %>');
+            "
+            class="card-img-top image-library"
+          ></div>
 
-    <div
-      class="col-12 col-md-6 col-lg-4 col-xl-3"
-      x-ref="image-<%= image.id %>"
-      draggable="true"
-    >
-      <div class="card">
-        <img
-          src="/uploads/images/<%= image.src %>#<%= image.modified_at %>"
-          alt="uploaded image"
-          class="card-img-top"
-          style="max-height: 16rem; object-fit: cover"
-        />
+          <div class="card-body">
+            <h5 class="card-title mb-3">
+              <i class="bi bi-image"></i>
 
-        <div class="card-body">
-          <h5 class="card-title mb-3">
-            <i class="bi bi-image"></i>
+              <%= image.name %>
+            </h5>
 
-            <%= image.name %>
-          </h5>
+            <div class="d-flex justify-content-between">
+              <a
+                href="/library/modify?type=image&id=<%= image.id %>"
+                class="btn btn-sm btn-outline-dark"
+                >Modify</a
+              >
 
-          <div class="d-flex justify-content-between">
-            <a
-              href="/library/modify?type=image&id=<%= image.id %>"
-              class="btn btn-sm btn-outline-dark"
-              >Modify</a
-            >
-
-            <!-- x-on:click="deleteImage(<%= image.id %>)" -->
-            <button class="btn btn-sm btn-outline-danger">Delete</button>
+              <button
+                class="btn btn-sm btn-outline-danger"
+                x-on:click="deleteImage(<%= image.id %>)"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <% } %>
+      <% } %>
+    </div>
   </div>
 </div>

@@ -1,0 +1,51 @@
+<div class="container my-4" x-data="responsivePage()">
+  <div class="row mb-4">
+    <a
+      x-on:click.once="navigate('/library?path=/<%= props.back %>')"
+      class="link-primary"
+      type="button"
+    >
+      Back
+    </a>
+  </div>
+
+  <form
+    action="/library/modify/folder"
+    method="post"
+    class="bg-light p-3 rounded border col-12 col-md-6"
+    x-data="addImageForm('<%= props.path %>', '<%= props.csrf %>')"
+    x-on:submit.prevent="submit"
+  >
+    <h4 class="mb-3">Add image</h4>
+
+    <div class="mb-3">
+      <label for="name" class="form-label">Image :</label>
+
+      <div class="mb-3" x-show="imageData">
+        <img
+          x-bind:src="imageData"
+          class="rounded border bg-secondary bg-opacity-50"
+          style="width: 20rem; height: 15rem; object-fit: contain"
+        />
+      </div>
+
+      <input
+        type="file"
+        class="form-control"
+        name="image"
+        accept="image/*"
+        autocomplete="off"
+        x-on:change="fileChosen"
+      />
+    </div>
+
+    <div class="mb-3 alert alert-danger" x-text="error" x-show="error"></div>
+
+    <input
+      type="submit"
+      value="Add image"
+      class="btn btn-primary"
+      x-bind:class="{ 'disabled': !imageData }"
+    />
+  </form>
+</div>

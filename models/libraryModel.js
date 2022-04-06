@@ -116,7 +116,7 @@ const getMoveCandidates = (id) => {
   return moveCandidates;
 };
 
-const checkMoveCandidate = (id, move, name) => {
+const checkMoveFolderCandidate = (id, move, name) => {
   let check = libraryDB
     .prepare(
       "select * from `folder` where `path` not like (select `path` from `folder` where `id` = @id)||'/%'" +
@@ -159,40 +159,51 @@ const deleteFolder = (id) => {
     .run({ id });
 };
 
-const addImage = ({ name, src, created_at, modified_at }) => {
+const addImage = (name, path, parent_id) => {
   libraryDB
     .prepare(
-      "insert into `image` ('name', 'src', 'created_at', 'modified_at') values (@name, @src, @created_at, @modified_at)"
+      "insert into `image` ('name', 'src', 'parent_id', 'created_at', 'modified_at') values (@name, @src, @parent_id, @created_at, @modified_at)"
     )
     .run({
       name,
-      src,
-      created_at,
-      modified_at,
+      src: path,
+      parent_id,
+      created_at: new Date().getTime(),
+      modified_at: new Date().getTime(),
     });
 };
 
-const sanitizeImagePath = (_path, expect) => {
-  let test = path.join("uploads/images", _path);
-
-  if (test.startsWith(expect)) return test;
-
-  return false;
+const moveImage = (id, move) => {
+  libraryDB
+    .prepare("update `image` set `parent_id` = @move where `id` = @id")
+    .run({ id, move });
 };
 
-const deleteImage = (image_id) => {
-  let _path = sanitizeImagePath(image, "uploads/images");
+const checkImageExists = (id) => {
+  let check = libraryDB
+    .prepare("select * from `image` where `id` = @id")
+    .get({ id });
 
-  if (_path) {
-    fs.unlinkSync(_path);
-    return true;
+  return !!check?.id;
+};
+
+const deleteImage = (id) => {
+  let image = libraryDB
+    .prepare("select * from `image` where `id` = @id")
+    .get({ id });
+
+  try {
+    fs.unlinkSync(path.join("uploads/images", image.src));
+  } catch (err) {
+    console.log(err.message);
   }
 
-  return false;
+  libraryDB.prepare("delete from `image` where `id` = @id").run({ id });
 };
 
 export {
   getImagesOfPath,
+  moveImage,
   addImage,
   deleteFolder,
   getFoldersOfPath,
@@ -203,7 +214,8 @@ export {
   getMoveCandidates,
   modifyFolderName,
   deleteImage,
-  checkMoveCandidate,
+  checkImageExists,
+  checkMoveFolderCandidate,
   generateFolderPath,
   moveFolder,
   checkRenameFolder,
