@@ -1,3 +1,6 @@
+window.addEventListener("page:fetch", () => NProgress.start());
+window.addEventListener("page:change", () => NProgress.done());
+
 function responsivePage() {
   window.onpopstate = (e) => navigate(e.state.location, true);
 
@@ -7,12 +10,16 @@ function responsivePage() {
 }
 
 function navigate(url, fromPopState = false) {
+  window.dispatchEvent(new CustomEvent("page:fetch"));
+
   fetch(url)
     .then((res) => res.text())
     .then((text) => {
       let newElem = new DOMParser()
         .parseFromString(text, "text/html")
         .querySelector("main").innerHTML;
+
+      window.dispatchEvent(new CustomEvent("page:change"));
 
       document.querySelector("main").innerHTML = newElem;
 
@@ -178,6 +185,39 @@ function modifyFolderForm(back, _csrf, parent_id, defautl_name) {
           });
         },
       });
+    },
+  };
+}
+
+function manageAlert() {
+  return {
+    show: false,
+    title: "",
+    content: "",
+    callback: () => {},
+
+    showAlert(e) {
+      this.show = true;
+
+      this.title = e.detail.title;
+      this.content = e.detail.content;
+      this.callback = e.detail.callback;
+    },
+
+    clearAlert() {
+      this.show = false;
+      this.title = "";
+      this.content = "";
+    },
+
+    cancelAlert() {
+      this.clearAlert();
+    },
+
+    confirmAlert() {
+      this.clearAlert();
+
+      this.callback();
     },
   };
 }
