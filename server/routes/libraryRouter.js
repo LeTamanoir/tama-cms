@@ -16,6 +16,7 @@ import {
   deleteFolder,
   checkRenameFolder,
   getFolderOfPath,
+  getParentOfPath,
 } from "../../models/libraryModel.js";
 import { isAuthed } from "../../middlewares/authMiddleware.js";
 import { uploadImage } from "../../middlewares/uploadMiddleware.js";
@@ -38,6 +39,7 @@ router.get("/library", isAuthed, (req, res) => {
     });
   }
 
+  const parent = getParentOfPath(path);
   const images = getImagesOfPath(path);
   const folders = getFoldersOfPath(path);
 
@@ -45,9 +47,11 @@ router.get("/library", isAuthed, (req, res) => {
     page: page("index"),
     props: {
       authed: true,
+      csrf: req.csrfToken(),
+      path: path.replace("/", "").split("/"),
       images,
       folders,
-      path: path.replace("/", "").split("/"),
+      parent,
     },
   });
 });
@@ -130,24 +134,20 @@ router.put("/library/folder", isAuthed, (req, res) => {
   }
 
   // then move
-  if (folder.parent_id !== parseInt(move)) {
-    // folder moved
-
-    console.log(checkMoveCandidate(id, move, name));
-
-    return res.sendStatus(200);
-
-    if (checkMoveCandidate(id, move, name)) {
-      moveFolder(id, move, name);
-      generateFolderPath(id, move, name);
+  if (folder.id !== parseInt(move)) {
+    if (folder.parent_id !== parseInt(move)) {
+      if (checkMoveCandidate(id, move, name)) {
+        moveFolder(id, move, name);
+        generateFolderPath(id, move, name);
+      } else {
+        return res
+          .status(400)
+          .json({ error: `"${name}" already exists at chosen destination` });
+      }
     } else {
-      return res
-        .status(400)
-        .json({ error: `"${name}" already exists at chosen destination` });
+      // folder not moved
+      generateFolderPath(id, move, name);
     }
-  } else {
-    // folder not moved
-    generateFolderPath(id, move, name);
   }
 
   res.sendStatus(200);

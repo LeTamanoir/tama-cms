@@ -32,12 +32,12 @@ function navigate(url, fromPopState = false) {
     .catch((e) => console.log(e));
 }
 
-function addFolderForm(back) {
+function addFolderForm(path) {
   return {
     error: "",
     nameValid: null,
 
-    back,
+    path,
 
     validateName(e) {
       if (e.target.value.length === 0) {
@@ -63,7 +63,7 @@ function addFolderForm(back) {
         body: formData,
       }).then((res) => {
         if (res.ok) {
-          navigate(`/library?path=/${this.back}`);
+          navigate(`/library?path=${this.path}`);
         } else {
           res.json().then((data) => {
             this.error = data.error;
@@ -218,6 +218,44 @@ function manageAlert() {
       this.clearAlert();
 
       this.callback();
+    },
+  };
+}
+
+function folderGrid(_csrf, path) {
+  return {
+    current: null,
+    current_name: "",
+    current_over: null,
+    dragging: false,
+    path,
+    _csrf,
+
+    setCurrent(id) {
+      this.current = id;
+    },
+
+    isOver(id) {
+      return this.dragging && this.current !== id && this.current_over === id;
+    },
+
+    handleMove() {
+      if (this.current === this.current_over) return;
+
+      let formData = new URLSearchParams();
+      formData.append("name", this.current_name);
+      formData.append("move", this.current_over);
+      formData.append("id", this.current);
+      formData.append("_csrf", this._csrf);
+
+      fetch("/library/folder", {
+        method: "PUT",
+        body: formData,
+      }).then((res) => {
+        if (res.ok) {
+          navigate(`/library?path=/${this.path}`);
+        }
+      });
     },
   };
 }

@@ -11,11 +11,37 @@
     </a>
   </nav>
 
-  <div class="row g-3 mb-4">
-    <% for (folder of props.folders) { %>
+  <div
+    class="row g-3 mb-4"
+    x-data="folderGrid('<%= props.csrf %>', '<%= props.path.join('/') %>')"
+    x-on:dragend.prevent="dragging = false"
+    x-on:drop="dragging = false"
+    x-on:drop.prevent="handleMove"
+  >
+    <% if(props.path[0] !== '') { %>
+    <div class="col-12 mb-3" x-show="dragging">
+      <div
+        class="col-3 p-2 border rounded"
+        x-bind:class="{'border-2 border-primary': isOver('<%= props.parent.id %>')}"
+        x-on:dragover.prevent="current_over = '<%= props.parent.id %>'"
+        x-on:dragleave.prevent="current_over = null"
+      >
+        Move up
+      </div>
+    </div>
+
+    <% } %> <% for (folder of props.folders) { %>
 
     <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-      <div class="card">
+      <div
+        class="card"
+        draggable="true"
+        style="cursor: move"
+        x-bind:class="{'border-2 border-primary': isOver('<%= folder.id %>')}"
+        x-on:dragover.prevent="current_over = '<%= folder.id %>'"
+        x-on:dragstart.self="current = '<%= folder.id %>'; current_name = '<%= folder.name %>'; dragging = true"
+        x-on:dragleave.prevent="current_over = null"
+      >
         <div class="card-body">
           <h5 class="card-title mb-3">
             <i class="bi bi-folder"></i>
@@ -45,12 +71,12 @@
   </div>
 
   <div class="row g-3">
-    <!-- x-data="imageContainer()" -->
     <% for (image of props.images) { %>
 
     <div
       class="col-12 col-md-6 col-lg-4 col-xl-3"
       x-ref="image-<%= image.id %>"
+      draggable="true"
     >
       <div class="card">
         <img
@@ -84,24 +110,3 @@
     <% } %>
   </div>
 </div>
-
-<script>
-  // function library() {
-  //   return {
-  //     deleteImage(image_id) {
-  //       if (!confirm("Are you sure ?")) return;
-
-  //       let formData = new URLSearchParams();
-  //       formData.append("_csrf", "<%= props.csrf %>");
-  //       formData.append("image_id", image_id);
-
-  //       fetch("/library", {
-  //         method: "DELETE",
-  //         body: formData,
-  //       }).then((res) => {
-  //         this.$refs[`image-${image_id}`].remove();
-  //       });
-  //     },
-  //   };
-  // }
-</script>

@@ -47,6 +47,18 @@ const getFolderOfPath = (path) => {
   return folders;
 };
 
+const getParentOfPath = (path) => {
+  const folder = libraryDB
+    .prepare(
+      "select * from `folder` where `id` = (select `parent_id` from `folder` where `path` = @path)"
+    )
+    .get({
+      path,
+    });
+
+  return folder;
+};
+
 const getFolder = (id) => {
   const folder = libraryDB
     .prepare("select * from `folder` where `id` = @id")
@@ -196,5 +208,6 @@ export {
   moveFolder,
   checkRenameFolder,
   createFolder,
+  getParentOfPath,
   checkCreateFolder,
 };
