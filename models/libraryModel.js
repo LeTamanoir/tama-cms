@@ -179,6 +179,14 @@ const moveImage = (id, move) => {
     .run({ id, move });
 };
 
+const getImage = (id) => {
+  const image = libraryDB
+    .prepare("select * from `image` where `id` = @id")
+    .get({ id });
+
+  return image;
+};
+
 const checkImageExists = (id) => {
   let check = libraryDB
     .prepare("select * from `image` where `id` = @id")
@@ -187,22 +195,47 @@ const checkImageExists = (id) => {
   return !!check?.id;
 };
 
-const deleteImage = (id) => {
-  let image = libraryDB
+const deleteImageDisk = (id) => {
+  let { src } = libraryDB
     .prepare("select * from `image` where `id` = @id")
     .get({ id });
 
   try {
-    fs.unlinkSync(path.join("uploads/images", image.src));
+    fs.unlinkSync(path.join("uploads/images", src));
   } catch (err) {
     console.log(err.message);
   }
+};
+
+const deleteImage = (id) => {
+  deleteImageDisk(id);
 
   libraryDB.prepare("delete from `image` where `id` = @id").run({ id });
 };
 
+const modifyImage = (name, id, newSrc) => {
+  deleteImageDisk(id);
+
+  libraryDB
+    .prepare(
+      "update `image` set `name` = @name, `src` = @newSrc, `modified_at` = @modified where `id` = @id"
+    )
+    .run({ name, newSrc, modified: new Date().getTime(), id });
+};
+
+const modifyImageName = (name, id) => {
+  libraryDB
+    .prepare(
+      "update `image` set `name` = @name, `modified_at` = @modified where `id` = @id"
+    )
+    .run({ name, modified: new Date().getTime(), id });
+};
+
 export {
+  modifyImage,
+  modifyImageName,
   getImagesOfPath,
+  getImage,
   moveImage,
   addImage,
   deleteFolder,

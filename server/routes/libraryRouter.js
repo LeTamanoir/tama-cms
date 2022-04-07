@@ -20,6 +20,8 @@ import {
   addImage,
   moveImage,
   checkImageExists,
+  getImage,
+  modifyImageName,
 } from "../../models/libraryModel.js";
 import { isAuthed } from "../../middlewares/authMiddleware.js";
 import { uploadImage } from "../../middlewares/uploadMiddleware.js";
@@ -87,6 +89,38 @@ router.get("/library/modify/folder", isAuthed, (req, res) => {
       back: folder.path.replace("/", "").split("/").slice(0, -1).join("/"),
       folder,
       moveCandidates,
+    },
+  });
+});
+
+router.get("/library/modify/image", isAuthed, (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.render("document", {
+      page: page("error"),
+      props: { authed: true, error: "Folder not found" },
+    });
+  }
+
+  if (!checkImageExists(id)) {
+    return res.render("document", {
+      page: page("error"),
+      props: { authed: true, error: "Folder not found" },
+    });
+  }
+
+  const image = getImage(id);
+  const parent = getFolder(image.parent_id);
+
+  res.render("document", {
+    page: page("modify/image"),
+    props: {
+      authed: true,
+      csrf: req.csrfToken(),
+      back: parent.path,
+      image,
+      parent,
     },
   });
 });
@@ -225,25 +259,33 @@ router.post("/library/image", isAuthed, (req, res) => {
     let image_src = req.UPLOAD_IMAGE_SRC;
     addImage(image_name, image_src, folder.id);
 
-    return res.sendStatus(200);
+    res.sendStatus(200);
   });
 });
 
 router.put("/library/image", isAuthed, (req, res) => {
-  const { name, move, id } = req.body;
-  if (!name || !move || !id) {
-    return res.sendStatus(403);
+  const { crop } = req.query;
+
+  if (crop === "false") {
+    const { name, id } = req.body;
+
+    if (!name || !id) {
+      return res.status(400).json({ error: "Please complete all fields" });
+    }
+    if (new RegExp(/[^\w]|\s/g).test(name)) return res.sendStatus(403);
+
+    modifyImageName(name, id);
+    res.sendStatus(200);
   }
 
-  // return res.status(400).json({ error: "Please complete all fields" });
-
-  if (!checkFolderExists(move) || !checkImageExists(id)) {
-    return res.sendStatus(403);
+  if (crop === "true") {
+    uploadImage(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      res.sendStatus(200);
+    });
   }
-
-  moveImage(id, move);
-
-  res.sendStatus(200);
 });
 
 router.delete("/library/image", isAuthed, (req, res) => {
@@ -256,28 +298,5 @@ router.delete("/library/image", isAuthed, (req, res) => {
 
   res.sendStatus(200);
 });
-
-// router.put("/library", isAuthed, (req, res) => {
-//   uploadImage(req, res, (err) => {
-//     if (err) {
-//       console.log(err, req.file);
-//       return res.sendStatus(403);
-//     }
-
-//     res.redirect("/library");
-//   });
-// });
-
-// router.delete("/library", isAuthed, (req, res) => {
-//   const { image_id } = req.body;
-
-//   if (!image_id) return res.sendStatus(403);
-
-//   let result = deleteImage(image_id);
-
-//   if (result) return res.sendStatus(200);
-
-//   res.sendStatus(403);
-// });
 
 export default router;
