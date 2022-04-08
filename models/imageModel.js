@@ -77,6 +77,16 @@ export default class ImageModel {
       .run({ name, modified: new Date().getTime(), id });
   }
 
+  static modifyCrop(name, id, newSrc) {
+    deleteImageDisk(id);
+
+    libraryDB
+      .prepare(
+        "update `image` set `name` = @name, `src` = @newSrc, `modified_at` = @modified where `id` = @id"
+      )
+      .run({ name, newSrc, modified: new Date().getTime(), id });
+  }
+
   static getMoveCandidates(id) {
     const moveCandidates = libraryDB
       .prepare(

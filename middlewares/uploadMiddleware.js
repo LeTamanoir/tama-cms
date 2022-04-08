@@ -22,7 +22,7 @@ const imageStorage = multer.diskStorage({
 
       let imageName = uuidv4() + ".jpeg";
 
-      imageModel.modifyName(name, id, imageName);
+      imageModel.modifyCrop(name, id, imageName);
       cb(null, imageName);
     }
 
