@@ -78,8 +78,6 @@ export default {
 
     if (!imageModel.checkExists(id)) return res.sendStatus(403);
 
-    if (new RegExp(/[^\w]|\s/g).test(name)) return res.sendStatus(403);
-
     imageModel.move(id, move);
     imageModel.modifyName(name, id);
 
@@ -95,7 +93,7 @@ export default {
     });
   },
 
-  delete({ id }, req) {
+  delete({ id }, res) {
     if (!imageModel.checkExists(id)) return res.sendStatus(403);
 
     imageModel.delete(id);

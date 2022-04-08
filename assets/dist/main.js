@@ -311,28 +311,12 @@ function modifyImageForm(back, _csrf, cropper_src) {
     _csrf,
     cropper_src,
     moved: false,
-    nameValid: null,
+    renamed: false,
     error: "",
     cropper_show: false,
     cropper: null,
     image_blob: null,
     image_preview: "",
-
-    validateName(e) {
-      if (e.target.value.length === 0) {
-        this.error = "";
-        this.nameValid = null;
-        return;
-      }
-
-      if (new RegExp(/[^\w]|\s/g).test(e.target.value)) {
-        this.error = "Name must match alphanumeric chars and no whitespace";
-        this.nameValid = false;
-      } else {
-        this.error = "";
-        this.nameValid = true;
-      }
-    },
 
     showCropper() {
       this.cropper = new Cropper(this.$refs.cropper, {});

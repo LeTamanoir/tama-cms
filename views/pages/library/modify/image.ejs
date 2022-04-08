@@ -14,7 +14,7 @@
     x-data="modifyImageForm('<%= props.back %>', '<%= props.csrf %>', '/uploads/images/<%= props.image.src %>')"
     x-on:submit.prevent="submit"
   >
-    <h4 class="mb-3">Mofidy folder</h4>
+    <h4 class="mb-3">Mofidy image</h4>
 
     <input type="hidden" name="id" value="<%= props.image.id %>" />
 
@@ -27,8 +27,7 @@
         class="form-control"
         autocomplete="off"
         value="<%= props.image.name %>"
-        x-bind:class="{'is-invalid': nameValid === false, 'is-valid': nameValid }"
-        x-on:input="validateName"
+        x-on:input="renamed = $event.target.value !== '<%= props.image.name %>'"
         x-on:keydown.enter.prevent
       />
     </div>
@@ -142,7 +141,7 @@
         type="submit"
         value="Modify"
         class="btn btn-primary"
-        x-bind:class="{ 'disabled': !nameValid && (cropper_show || !image_blob) && !moved }"
+        x-bind:class="{ 'disabled': !renamed && (cropper_show || !image_blob) && !moved }"
       />
     </div>
   </form>
