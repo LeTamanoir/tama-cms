@@ -4,8 +4,8 @@ import Page from "../helpers/page.js";
 
 const page = new Page("Tama-cms - Library", "pages/library/", "library");
 
-export default {
-  getView({ path }, req, res) {
+export default class LibraryController {
+  static getView({ path }, req, res) {
     if (!folderModel.checkPathExists(path)) {
       return res.render("document", {
         page: page.getProperties("error"),
@@ -28,5 +28,5 @@ export default {
         parent,
       },
     });
-  },
-};
+  }
+}

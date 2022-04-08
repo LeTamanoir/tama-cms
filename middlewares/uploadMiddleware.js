@@ -10,7 +10,7 @@ const imageStorage = multer.diskStorage({
 
   filename: (req, file, cb) => {
     if (req.method === "PUT") {
-      const { name, id } = req.body;
+      const { name, id, move } = req.body;
 
       if (!name || !id) {
         return cb(new Error("Please complete all fields"), null);
@@ -22,17 +22,21 @@ const imageStorage = multer.diskStorage({
 
       let imageName = uuidv4() + ".jpeg";
 
-      imageModel.modifyCrop(name, id, imageName);
+      req.MODIFIED_IMAGE = { name, id, src: imageName, move };
+
       cb(null, imageName);
     }
 
     if (req.method === "POST") {
       let imageName = uuidv4() + path.extname(file.originalname);
-      req.UPLOAD_IMAGE_SRC = imageName;
-      req.UPLOAD_IMAGE_NAME = file.originalname.replace(
-        /\.(jpg|JPG|jpeg|webp|JPEG|png|PNG|gif|GIF)$/g,
-        ""
-      );
+
+      req.UPLOADED_IMAGE = {
+        src: imageName,
+        image: file.originalname.replace(
+          /\.(jpg|JPG|jpeg|webp|JPEG|png|PNG|gif|GIF)$/g,
+          ""
+        ),
+      };
 
       cb(null, imageName);
     }

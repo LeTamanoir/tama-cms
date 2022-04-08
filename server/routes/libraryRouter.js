@@ -93,6 +93,16 @@ router.put("/library/image", isAuthed, (req, res) => {
   imageController.modify({ name, id, move }, res);
 });
 
+router.put("/library/image/resize", isAuthed, (req, res) => {
+  const { id, name, move, resize_width, resize_height } = req.body;
+
+  if (validator.check({ id, name, move, resize_width, resize_height })) {
+    return res.status(400).json({ error: "Please complete all fields" });
+  }
+
+  imageController.resize({ id, name, move, resize_width, resize_height }, res);
+});
+
 router.put("/library/image/crop", isAuthed, (req, res) => {
   imageController.crop(req, res);
 });

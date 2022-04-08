@@ -11,56 +11,108 @@
 
   <form
     class="bg-light p-3 rounded border"
-    x-data="modifyImageForm('<%= props.back %>', '<%= props.csrf %>', '/uploads/images/<%= props.image.src %>')"
+    x-data="modifyImageForm('<%= props.back %>', '<%= props.csrf %>', '/uploads/images/<%= props.image.src %>',
+      <%= JSON.parse(props.image?.info || '')?.res?.width / JSON.parse(props.image?.info || '')?.res?.height %>)"
     x-on:submit.prevent="submit"
   >
     <h4 class="mb-3">Mofidy image</h4>
 
     <input type="hidden" name="id" value="<%= props.image.id %>" />
 
-    <div class="mb-3 col-md-6">
-      <label for="name" class="form-label">Name :</label>
-      <input
-        id="name"
-        name="name"
-        type="text"
-        class="form-control"
-        autocomplete="off"
-        value="<%= props.image.name %>"
-        x-on:input="renamed = $event.target.value !== '<%= props.image.name %>'"
-        x-on:keydown.enter.prevent
-      />
-    </div>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label for="name" class="form-label">Name :</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            class="form-control"
+            autocomplete="off"
+            value="<%= props.image.name %>"
+            x-on:input="renamed = $event.target.value !== '<%= props.image.name %>'"
+            x-on:keydown.enter.prevent
+          />
+        </div>
 
-    <div class="mb-3 col-md-6">
-      <label for="move" class="form-label">Move image :</label>
-      <select
-        name="move"
-        id="move"
-        class="form-control"
-        autocomplete="off"
-        x-on:change="moved = $event.target.value !== '<%= props.image.parent_id %>'"
-      >
-        <option value="<%= props.image.parent_id %>">Don't move</option>
+        <div class="mb-3">
+          <label for="move" class="form-label">Move image :</label>
+          <select
+            name="move"
+            id="move"
+            class="form-control"
+            autocomplete="off"
+            x-on:change="moved = $event.target.value !== '<%= props.image.parent_id %>'"
+          >
+            <option value="<%= props.image.parent_id %>">Don't move</option>
 
-        <% for(move of props.moveCandidates) { %>
+            <% for(move of props.moveCandidates) { %>
 
-        <option value="<%= move.id %>">
-          => <%= move.name %> (<%= move.path %>)
-        </option>
+            <option value="<%= move.id %>">
+              => <%= move.name %> (<%= move.path %>)
+            </option>
 
-        <% } %>
-      </select>
+            <% } %>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-md-6 border-start border-2">
+        <div class="form-label">Metadata :</div>
+
+        <p class="mb-1">
+          Image type :
+          <span class="text-muted">
+            <%= JSON.parse(props.image?.info || '')?.ext.replace('.','') %>
+          </span>
+        </p>
+
+        <p class="mb-1">
+          Dimension :
+          <span class="text-muted">
+            <%= Object.values(JSON.parse(props.image?.info ||
+            '')?.res).join('x') %> Pixels
+          </span>
+        </p>
+        <p class="mb-1">
+          Modified :
+          <span class="text-muted">
+            <%= new Date(props.image.modified_at).toLocaleString('fr') %>
+          </span>
+        </p>
+        <p class="mb-1">
+          Added :
+          <span class="text-muted">
+            <%= new Date(props.image.created_at).toLocaleString('fr') %>
+          </span>
+        </p>
+      </div>
     </div>
 
     <div class="mb-3">
       <div>
         <button
           class="btn btn-sm btn-primary"
-          x-show="!cropper_show && !image_preview"
+          x-show="!cropper_show && !image_preview && !resize_show"
           x-on:click.prevent="cropper_show = true; $nextTick(() => showCropper())"
         >
           Crop image
+        </button>
+
+        <button
+          class="ms-2 btn btn-sm btn-dark"
+          x-show="!cropper_show && !image_preview && !resize_show"
+          x-on:click.prevent="resize_show = true"
+        >
+          Resize image
+        </button>
+
+        <button
+          class="btn btn-sm btn-danger"
+          x-show="resize_show"
+          x-on:click.prevent="resize_show = false; resize_height = 0; resize_width = 0"
+        >
+          Cancel
         </button>
 
         <button
@@ -79,6 +131,44 @@
           Cancel crop
         </button>
       </div>
+
+      <template x-if="resize_show">
+        <div class="mt-3 col-md-4 border bg-white p-2 rounded">
+          <div class="d-flex align-items-center mb-2">
+            <input
+              type="number"
+              disabled
+              class="mx-2 form-control"
+              value="<%= JSON.parse(props.image?.info || '')?.res?.width %>"
+            />
+            <i class="bi bi-arrow-right fs-5"></i>
+            <input
+              type="number"
+              class="mx-2 form-control"
+              name="resize_width"
+              x-model="resize_width"
+              x-on:input="resize_height = parseInt(resize_width / ratio)"
+            />
+          </div>
+
+          <div class="d-flex align-items-center">
+            <input
+              type="number"
+              disabled
+              class="mx-2 form-control"
+              value="<%= JSON.parse(props.image?.info || '')?.res?.height %>"
+            />
+            <i class="bi bi-arrow-right fs-5"></i>
+            <input
+              type="number"
+              class="mx-2 form-control"
+              name="resize_height"
+              x-model="resize_height"
+              x-on:input="resize_width = parseInt(resize_height * ratio)"
+            />
+          </div>
+        </div>
+      </template>
 
       <template x-if="image_preview">
         <div class="mt-3">
@@ -101,12 +191,19 @@
             />
           </div>
 
-          <div class="mt-2 d-flex">
+          <div class="mt-2 d-flex align-items-center">
             <button
-              class="ms-2 btn btn-sm btn-dark"
+              class="btn btn-sm btn-dark"
               x-on:click.prevent="cropper.reset()"
             >
               Reset
+            </button>
+
+            <button
+              class="ms-2 btn btn-sm btn-outline-dark"
+              x-on:click.prevent="fitImage()"
+            >
+              <i class="bi bi-arrows-fullscreen"></i>
             </button>
 
             <button
@@ -141,7 +238,7 @@
         type="submit"
         value="Modify"
         class="btn btn-primary"
-        x-bind:class="{ 'disabled': !renamed && (cropper_show || !image_blob) && !moved }"
+        x-bind:class="{ 'disabled': !renamed && (cropper_show || !image_blob) && !moved && !resize_show}"
       />
     </div>
   </form>

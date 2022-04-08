@@ -2,6 +2,9 @@ import imageModel from "../models/imageModel.js";
 import folderModel from "../models/folderModel.js";
 import { uploadImage } from "../middlewares/uploadMiddleware.js";
 import Page from "../helpers/page.js";
+import FileInfo from "../helpers/fileInfo.js";
+import sharp from "sharp";
+import { v4 as uuidv4 } from "uuid";
 
 const page = new Page("Tama-cms - Library", "pages/library/", "library");
 
@@ -35,9 +38,10 @@ export default class ImageController {
         return res.status(400).json({ error: err.message });
       }
 
-      let image_name = req.UPLOAD_IMAGE_NAME;
-      let image_src = req.UPLOAD_IMAGE_SRC;
-      imageModel.add(image_name, image_src, folder.id);
+      const { image, src } = req.UPLOADED_IMAGE;
+      const info = FileInfo.get("uploads/images/" + src);
+
+      imageModel.add(image, src, info, folder.id);
 
       res.sendStatus(200);
     });
@@ -86,8 +90,51 @@ export default class ImageController {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
+
+      const { name, id, src, move } = req.MODIFIED_IMAGE;
+      const info = FileInfo.get("uploads/images/" + src);
+
+      imageModel.move(id, move);
+      imageModel.modifyChange(name, id, src, info);
+
       res.sendStatus(200);
     });
+  }
+
+  static resize({ id, name, move, resize_width, resize_height }, res) {
+    if (!imageModel.checkExists(id)) return res.sendStatus(403);
+
+    if (
+      resize_width < 0 ||
+      resize_height < 0 ||
+      resize_width > 3000 ||
+      resize_height > 3000
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Can't resize : dimensions are too big" });
+    }
+
+    const image = imageModel.get(id);
+
+    let _path = "uploads/images/" + image.src;
+    let imageName = uuidv4() + ".jpeg";
+
+    sharp(_path)
+      .resize({
+        width: parseInt(resize_width),
+        height: parseInt(resize_height),
+        fit: "fill",
+      })
+      .toFile("uploads/images/" + imageName)
+      .then(() => {
+        const info = FileInfo.get("uploads/images/" + imageName);
+
+        imageModel.move(id, move);
+        imageModel.modifyChange(name, id, imageName, info);
+
+        res.sendStatus(200);
+      });
   }
 
   static delete({ id }, res) {

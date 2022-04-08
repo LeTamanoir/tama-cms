@@ -32,6 +32,7 @@
   >
     <div class="row g-3 mb-4">
       <% if(props.path[0] !== '') { %>
+
       <div class="col-12 mb-3" x-show="dragging">
         <div
           class="col-3 p-2 border rounded"
@@ -69,16 +70,16 @@
             <div class="d-flex justify-content-between">
               <a
                 x-on:click.once="navigate('/library/modify/folder?type=folder&id=<%= folder.id %>')"
-                class="btn btn-sm btn-outline-dark"
+                class="btn btn-sm btn-dark py-0"
               >
-                Modify
+                <i class="bi bi-pencil-square fs-5"></i>
               </a>
 
               <a
                 x-on:click="navigate('/library?path=<%= folder.path %>')"
-                class="btn btn-sm btn-primary"
+                class="btn btn-sm btn-primary py-0"
               >
-                Open
+                <i class="bi bi-folder2-open fs-5"></i>
               </a>
             </div>
           </div>
@@ -112,24 +113,31 @@
           ></div>
 
           <div class="card-body">
-            <h5 class="card-title mb-3">
-              <i class="bi bi-image"></i>
+            <h5 class="card-title mb-3 d-flex align-items-center">
+              <i class="bi bi-image me-2"></i>
 
               <%= image.name %>
+              <small class="ms-1 text-muted fw-normal fs-6">
+                <%= JSON.parse(image?.info || '')?.ext %>
+              </small>
+              <small class="ms-auto text-muted fw-normal fs-6">
+                <%= JSON.parse(image?.info || '')?.size %>
+              </small>
             </h5>
 
             <div class="d-flex justify-content-between">
               <a
                 href="/library/modify/image?id=<%= image.id %>"
-                class="btn btn-sm btn-outline-dark"
-                >Modify</a
+                class="btn btn-sm btn-dark py-0"
               >
+                <i class="bi bi-pencil-square fs-5"></i>
+              </a>
 
               <button
-                class="btn btn-sm btn-outline-danger"
+                class="btn btn-sm btn-danger py-0"
                 x-on:click="deleteImage(<%= image.id %>)"
               >
-                Delete
+                <i class="bi bi-trash fs-5"></i>
               </button>
             </div>
           </div>

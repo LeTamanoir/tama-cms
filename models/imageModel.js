@@ -22,15 +22,16 @@ export default class ImageModel {
     return images;
   }
 
-  static add(name, path, parent_id) {
+  static add(name, path, info, parent_id) {
     libraryDB
       .prepare(
-        "insert into `image` ('name', 'src', 'parent_id', 'created_at', 'modified_at') " +
-          "values (@name, @src, @parent_id, @created_at, @modified_at)"
+        "insert into `image` ('name', 'src', 'info', 'parent_id', 'created_at', 'modified_at') " +
+          "values (@name, @src, @info, @parent_id, @created_at, @modified_at)"
       )
       .run({
         name,
         src: path,
+        info: JSON.stringify(info),
         parent_id,
         created_at: new Date().getTime(),
         modified_at: new Date().getTime(),
@@ -65,14 +66,20 @@ export default class ImageModel {
       .run({ name, modified: new Date().getTime(), id });
   }
 
-  static modifyCrop(name, id, newSrc) {
+  static modifyChange(name, id, newSrc, info) {
     this.deleteDisk(id);
 
     libraryDB
       .prepare(
-        "update `image` set `name` = @name, `src` = @newSrc, `modified_at` = @modified where `id` = @id"
+        "update `image` set `name` = @name, `src` = @newSrc, `info` = @info, `modified_at` = @modified where `id` = @id"
       )
-      .run({ name, newSrc, modified: new Date().getTime(), id });
+      .run({
+        name,
+        newSrc,
+        info: JSON.stringify(info),
+        modified: new Date().getTime(),
+        id,
+      });
   }
 
   static getMoveCandidates(id) {

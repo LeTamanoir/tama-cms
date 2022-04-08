@@ -1,0 +1,19 @@
+BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS "folder" (
+	"name"	TEXT NOT NULL,
+	"path"	TEXT NOT NULL,
+	"parent_id"	INTEGER NOT NULL,
+	"id"	INTEGER,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "image" (
+	"name"	TEXT NOT NULL,
+	"src"	TEXT NOT NULL,
+	"info"	TEXT,
+	"parent_id"	INTEGER NOT NULL,
+	"created_at"	INTEGER NOT NULL,
+	"modified_at"	INTEGER NOT NULL,
+	"id"	INTEGER,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+COMMIT;
