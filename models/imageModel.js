@@ -15,16 +15,16 @@ const deleteImageDisk = (id) => {
   }
 };
 
-export default {
-  get(id) {
+export default class ImageModel {
+  static get(id) {
     const image = libraryDB
       .prepare("select * from `image` where `id` = @id")
       .get({ id });
 
     return image;
-  },
+  }
 
-  getFromPath(path) {
+  static getFromPath(path) {
     const images = libraryDB
       .prepare(
         "select * from `image` where `parent_id` = (select `id` from `folder` where `path` = @path)"
@@ -32,9 +32,9 @@ export default {
       .all({ path });
 
     return images;
-  },
+  }
 
-  add(name, path, parent_id) {
+  static add(name, path, parent_id) {
     libraryDB
       .prepare(
         "insert into `image` ('name', 'src', 'parent_id', 'created_at', 'modified_at') " +
@@ -47,37 +47,37 @@ export default {
         created_at: new Date().getTime(),
         modified_at: new Date().getTime(),
       });
-  },
+  }
 
-  move(id, move) {
+  static move(id, move) {
     libraryDB
       .prepare("update `image` set `parent_id` = @move where `id` = @id")
       .run({ id, move });
-  },
+  }
 
-  delete(id) {
+  static delete(id) {
     deleteImageDisk(id);
 
     libraryDB.prepare("delete from `image` where `id` = @id").run({ id });
-  },
+  }
 
-  checkExists(id) {
+  static checkExists(id) {
     let check = libraryDB
       .prepare("select * from `image` where `id` = @id")
       .get({ id });
 
     return !!check?.id;
-  },
+  }
 
-  modifyName(name, id) {
+  static modifyName(name, id) {
     libraryDB
       .prepare(
         "update `image` set `name` = @name, `modified_at` = @modified where `id` = @id"
       )
       .run({ name, modified: new Date().getTime(), id });
-  },
+  }
 
-  getMoveCandidates(id) {
+  static getMoveCandidates(id) {
     const moveCandidates = libraryDB
       .prepare(
         "select * from `folder` where `id` != (select `parent_id` from `image` where `id` = @id)"
@@ -85,9 +85,9 @@ export default {
       .all({ id });
 
     return moveCandidates;
-  },
+  }
 
-  getAllFromPath(path) {
+  static getAllFromPath(path) {
     const images = libraryDB
       .prepare(
         "select * from `image` where `parent_id` = (select `id` from `folder` where `path` = @path)"
@@ -95,5 +95,5 @@ export default {
       .all({ path });
 
     return images;
-  },
-};
+  }
+}

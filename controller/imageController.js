@@ -1,24 +1,21 @@
 import imageModel from "../models/imageModel.js";
 import folderModel from "../models/folderModel.js";
 import { uploadImage } from "../middlewares/uploadMiddleware.js";
+import Page from "../helpers/page.js";
 
-const page = (page) => ({
-  title: "Tama-cms - Library",
-  path: "pages/library/" + page,
-  current: "library",
-});
+const page = new Page("Tama-cms - Library", "pages/library/", "library");
 
-export default {
-  addView({ path }, req, res) {
+export default class ImageController {
+  static addView({ path }, req, res) {
     if (!folderModel.checkPathExists(path)) {
       return res.render("document", {
-        page: page("error"),
+        page: page.getProperties("error"),
         props: { authed: true, error: "Path does not exist" },
       });
     }
 
     res.render("document", {
-      page: page("add/image"),
+      page: page.getProperties("add/image"),
       props: {
         authed: true,
         csrf: req.csrfToken(),
@@ -26,9 +23,9 @@ export default {
         path,
       },
     });
-  },
+  }
 
-  add({ path }, req, res) {
+  static add({ path }, req, res) {
     if (!folderModel.checkPathExists(path)) return res.sendStatus(403);
 
     let folder = folderModel.getFromPath(path);
@@ -44,12 +41,12 @@ export default {
 
       res.sendStatus(200);
     });
-  },
+  }
 
-  modifyView({ id }, req, res) {
+  static modifyView({ id }, req, res) {
     if (!imageModel.checkExists(id)) {
       return res.render("document", {
-        page: page("error"),
+        page: page.getProperties("error"),
         props: { authed: true, error: "Folder not found" },
       });
     }
@@ -59,7 +56,7 @@ export default {
     const moveCandidates = imageModel.getMoveCandidates(id);
 
     res.render("document", {
-      page: page("modify/image"),
+      page: page.getProperties("modify/image"),
       props: {
         authed: true,
         csrf: req.csrfToken(),
@@ -69,9 +66,9 @@ export default {
         parent,
       },
     });
-  },
+  }
 
-  modify({ name, id, move }, res) {
+  static modify({ name, id, move }, res) {
     if (!folderModel.checkExists(move)) {
       return res.sendStatus(403);
     }
@@ -82,22 +79,22 @@ export default {
     imageModel.modifyName(name, id);
 
     res.sendStatus(200);
-  },
+  }
 
-  crop(req, res) {
+  static crop(req, res) {
     uploadImage(req, res, (err) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
       res.sendStatus(200);
     });
-  },
+  }
 
-  delete({ id }, res) {
+  static delete({ id }, res) {
     if (!imageModel.checkExists(id)) return res.sendStatus(403);
 
     imageModel.delete(id);
 
     res.sendStatus(200);
-  },
-};
+  }
+}

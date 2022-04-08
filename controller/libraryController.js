@@ -1,17 +1,14 @@
 import folderModel from "../models/folderModel.js";
 import imageModel from "../models/imageModel.js";
+import Page from "../helpers/page.js";
 
-const page = (page) => ({
-  title: "Tama-cms - Library",
-  path: "pages/library/" + page,
-  current: "library",
-});
+const page = new Page("Tama-cms - Library", "pages/library/", "library");
 
 export default {
   getView({ path }, req, res) {
     if (!folderModel.checkPathExists(path)) {
       return res.render("document", {
-        page: page("error"),
+        page: page.getProperties("error"),
         props: { authed: true, error: "Folder not found" },
       });
     }
@@ -21,7 +18,7 @@ export default {
     const folders = folderModel.getAllFromPath(path);
 
     res.render("document", {
-      page: page("index"),
+      page: page.getProperties("index"),
       props: {
         authed: true,
         csrf: req.csrfToken(),

@@ -1,22 +1,19 @@
 import folderModel from "../models/folderModel.js";
+import Page from "../helpers/page.js";
 
-const page = (page) => ({
-  title: "Tama-cms - Library",
-  path: "pages/library/" + page,
-  current: "library",
-});
+const page = new Page("Tama-cms - Library", "pages/library/", "library");
 
-export default {
-  addView({ path }, req, res) {
+export default class FolderController {
+  static addView({ path }, req, res) {
     if (!folderModel.checkPathExists(path)) {
       return res.render("document", {
-        page: page("error"),
+        page: page.getProperties("error"),
         props: { authed: true, error: "Path does not exist" },
       });
     }
 
     res.render("document", {
-      page: page("add/folder"),
+      page: page.getProperties("add/folder"),
       props: {
         authed: true,
         csrf: req.csrfToken(),
@@ -24,9 +21,9 @@ export default {
         path,
       },
     });
-  },
+  }
 
-  add({ name, path }, res) {
+  static add({ name, path }, res) {
     if (!folderModel.checkPathExists(path)) return res.sendStatus(403);
 
     const parent = folderModel.getFromPath(path);
@@ -42,20 +39,20 @@ export default {
     }
 
     res.status(400).json({ error: `"${name}" already exists in directory` });
-  },
+  }
 
-  delete({ id }, res) {
+  static delete({ id }, res) {
     if (!folderModel.checkExists(id)) return res.sendStatus(403);
 
     folderModel.delete(id);
 
     res.sendStatus(200);
-  },
+  }
 
-  modifyView({ id }, req, res) {
+  static modifyView({ id }, req, res) {
     if (!folderModel.checkExists(id)) {
       return res.render("document", {
-        page: page("error"),
+        page: page.getProperties("error"),
         props: { authed: true, error: "Folder not found" },
       });
     }
@@ -64,7 +61,7 @@ export default {
     const moveCandidates = folderModel.getMoveCandidates(id);
 
     res.render("document", {
-      page: page("modify/folder"),
+      page: page.getProperties("modify/folder"),
       props: {
         authed: true,
         csrf: req.csrfToken(),
@@ -73,9 +70,9 @@ export default {
         moveCandidates,
       },
     });
-  },
+  }
 
-  modify({ name, move, id }, res) {
+  static modify({ name, move, id }, res) {
     if (new RegExp(/[^\w]|\s/g).test(name)) return res.sendStatus(403);
     if (!folderModel.checkExists(id)) return res.sendStatus(403);
 
@@ -108,5 +105,5 @@ export default {
     }
 
     res.sendStatus(200);
-  },
-};
+  }
+}
