@@ -1,5 +1,6 @@
 import sqlite from "better-sqlite3";
 const libraryDB = new sqlite("database/library.db", {});
+import imageModel from "./imageModel.js";
 
 export default class FolderModel {
   static add(name, path, parent_id) {
@@ -29,6 +30,19 @@ export default class FolderModel {
   }
 
   static delete(id) {
+    const subFolders = libraryDB
+      .prepare(
+        "select * from `folder` where `path` like (select `path` from `folder` where `id` = @id)||'/%' or `id` = @id"
+      )
+      .all({ id });
+
+    for (let folder of subFolders) {
+      const images = imageModel.getAllFromPath(folder.path);
+      for (let image of images) {
+        imageModel.delete(image.id);
+      }
+    }
+
     libraryDB
       .prepare(
         "delete from `folder` where `path` like (select `path` from `folder` where `id` = @id)||'/%' or `id` = @id"

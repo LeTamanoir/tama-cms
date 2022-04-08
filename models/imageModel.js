@@ -3,18 +3,6 @@ import path from "path";
 import sqlite from "better-sqlite3";
 const libraryDB = new sqlite("database/library.db", {});
 
-const deleteImageDisk = (id) => {
-  let { src } = libraryDB
-    .prepare("select * from `image` where `id` = @id")
-    .get({ id });
-
-  try {
-    fs.unlinkSync(path.join("uploads/images", src));
-  } catch (err) {
-    console.log(err.message);
-  }
-};
-
 export default class ImageModel {
   static get(id) {
     const image = libraryDB
@@ -56,7 +44,7 @@ export default class ImageModel {
   }
 
   static delete(id) {
-    deleteImageDisk(id);
+    this.deleteDisk(id);
 
     libraryDB.prepare("delete from `image` where `id` = @id").run({ id });
   }
@@ -78,7 +66,7 @@ export default class ImageModel {
   }
 
   static modifyCrop(name, id, newSrc) {
-    deleteImageDisk(id);
+    this.deleteDisk(id);
 
     libraryDB
       .prepare(
@@ -105,5 +93,17 @@ export default class ImageModel {
       .all({ path });
 
     return images;
+  }
+
+  static deleteDisk(id) {
+    let { src } = libraryDB
+      .prepare("select * from `image` where `id` = @id")
+      .get({ id });
+
+    try {
+      fs.unlinkSync(path.join("uploads/images", src));
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 }

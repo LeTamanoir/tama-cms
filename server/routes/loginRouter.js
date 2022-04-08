@@ -1,14 +1,11 @@
-import express from "express";
-import { getUser } from "../../models/userModel.js";
+import { Router } from "express";
 import { isAuthed, isNotAuthed } from "../../middlewares/authMiddleware.js";
+import Page from "../../helpers/page.js";
+import validator from "../../middlewares/validationMiddleware.js";
+import userController from "../../controller/userController.js";
 
-const router = express.Router();
-
-const page = {
-  title: "Tama-cms - Login",
-  path: "pages/login",
-  current: "login",
-};
+const router = Router();
+const page = new Page("Tama-cms - Login", "pages/login", "login");
 
 router.get("/login", isNotAuthed, (req, res) => {
   res.render("document", {
@@ -23,7 +20,7 @@ router.get("/login", isNotAuthed, (req, res) => {
 router.post("/login", isNotAuthed, (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password) {
+  if (validator.check({ username, password })) {
     return res.render("document", {
       page,
       props: {
@@ -34,29 +31,11 @@ router.post("/login", isNotAuthed, (req, res) => {
     });
   }
 
-  const user = getUser(username, password);
-
-  if (user) {
-    req.session.user = user;
-    req.session.save();
-
-    return res.redirect("/");
-  }
-
-  res.render("document", {
-    page,
-    props: {
-      authed: false,
-      csrf: req.csrfToken(),
-      error: "Username or password invalid",
-    },
-  });
+  userController.verify({ username, password }, req, res);
 });
 
 router.get("/logout", isAuthed, (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/");
-  });
+  userController.logout(req, res);
 });
 
 export default router;

@@ -1,12 +1,12 @@
-const getUser = (username, password) => {
-  if (username === "tamanoir" && password === "mot_de_passe") {
-    return {
-      username: "tamanoir",
-      id: 1,
-    };
-  } else {
-    return false;
-  }
-};
+import sqlite from "better-sqlite3";
+const userDB = new sqlite("database/user.db", {});
 
-export { getUser };
+export default class UserModel {
+  static getFromName(username) {
+    const user = userDB
+      .prepare("select * from `user` where `username` = @username")
+      .get({ username });
+
+    return user;
+  }
+}

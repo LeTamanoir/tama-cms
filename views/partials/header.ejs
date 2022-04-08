@@ -7,11 +7,7 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div
-        class="collapse navbar-collapse"
-        :class=" show ? 'show' : ''"
-        id="navbarSupportedContent"
-      >
+      <div class="collapse navbar-collapse" :class="{'show': show }">
         <ul class="navbar-nav">
           <li class="nav-item">
             <a
@@ -34,10 +30,10 @@
           <% } %>
         </ul>
 
-        <div class="ms-auto">
+        <div class="navbar-nav ms-lg-auto">
           <% if (!props.authed) { %>
 
-          <a class="nav-link" href="/login"> Login </a>
+          <a class="nav-link text-primary" href="/login"> Login </a>
 
           <% } else { %>
 

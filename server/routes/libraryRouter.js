@@ -1,27 +1,22 @@
-import express from "express";
+import { Router } from "express";
 import { isAuthed } from "../../middlewares/authMiddleware.js";
 import imageController from "../../controller/imageController.js";
 import folderController from "../../controller/folderController.js";
 import libraryController from "../../controller/libraryController.js";
+import validator from "../../middlewares/validationMiddleware.js";
+import Page from "../../helpers/page.js";
 
-const router = express.Router();
-
-const page = (page) => ({
-  title: "Tama-cms - Library",
-  path: "pages/library/" + page,
-  current: "library",
-});
+const router = Router();
+const page = new Page("Tama-cms - Library", "pages/library/", "library");
 
 router.get("/library", isAuthed, (req, res) => {
   const { path = "/" } = req.query;
-
   libraryController.getView({ path }, req, res);
 });
 
 router.get("/library/modify/folder", isAuthed, (req, res) => {
   const { id } = req.query;
-
-  if (!id) {
+  if (validator.check({ id })) {
     return res.render("document", {
       page: page("error"),
       props: { authed: true, error: "Folder not found" },
@@ -33,8 +28,7 @@ router.get("/library/modify/folder", isAuthed, (req, res) => {
 
 router.get("/library/modify/image", isAuthed, (req, res) => {
   const { id } = req.query;
-
-  if (!id) {
+  if (validator.check({ id })) {
     return res.render("document", {
       page: page("error"),
       props: { authed: true, error: "Folder not found" },
@@ -46,13 +40,11 @@ router.get("/library/modify/image", isAuthed, (req, res) => {
 
 router.get("/library/add/folder", isAuthed, (req, res) => {
   const { path = "" } = req.query;
-
   folderController.addView({ path }, req, res);
 });
 
 router.get("/library/add/image", isAuthed, (req, res) => {
   const { path = "" } = req.query;
-
   imageController.addView({ path }, req, res);
 });
 
@@ -62,7 +54,7 @@ router.get("/library/add/image", isAuthed, (req, res) => {
 
 router.put("/library/folder", isAuthed, (req, res) => {
   const { name, move, id } = req.body;
-  if (!name || !move || !id) {
+  if (validator.check({ name, id, move })) {
     return res.status(400).json({ error: "Please complete all fields" });
   }
 
@@ -71,8 +63,7 @@ router.put("/library/folder", isAuthed, (req, res) => {
 
 router.post("/library/folder", isAuthed, (req, res) => {
   const { name, path } = req.body;
-
-  if (!name || !path) {
+  if (validator.check({ name, path })) {
     return res.status(400).json({ error: "Please complete all fields" });
   }
 
@@ -88,14 +79,14 @@ router.delete("/library/folder", isAuthed, (req, res) => {
 
 router.post("/library/image", isAuthed, (req, res) => {
   const { path } = req.query;
-  if (!path) return res.sendStatus(403);
+  if (validator.check({ path })) return res.sendStatus(403);
 
   imageController.add({ path }, req, res);
 });
 
 router.put("/library/image", isAuthed, (req, res) => {
   const { name, id, move } = req.body;
-  if (!name || !id || !move) {
+  if (validator.check({ name, id, move })) {
     return res.status(400).json({ error: "Please complete all fields" });
   }
 
@@ -108,7 +99,7 @@ router.put("/library/image/crop", isAuthed, (req, res) => {
 
 router.delete("/library/image", isAuthed, (req, res) => {
   const { id } = req.body;
-  if (!id) return res.sendStatus(403);
+  if (validator.check({ id })) return res.sendStatus(403);
 
   imageController.delete({ id }, res);
 });
