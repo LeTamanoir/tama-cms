@@ -76,22 +76,30 @@ function addFolderForm(path) {
 function manageAlert() {
   return {
     show: false,
+    show_styles: false,
     title: "",
     content: "",
     callback: () => {},
 
     showAlert(e) {
-      this.show = true;
-
+      this.show_styles = true;
       this.title = e.detail.title;
       this.content = e.detail.content;
       this.callback = e.detail.callback;
+
+      window.setTimeout(() => {
+        this.show = true;
+      }, 100);
     },
 
     clearAlert() {
       this.show = false;
-      this.title = "";
-      this.content = "";
+
+      window.setTimeout(() => {
+        this.show_styles = false;
+        this.title = "";
+        this.content = "";
+      }, 100);
     },
 
     cancelAlert() {
@@ -109,9 +117,9 @@ function manageAlert() {
 function modifyFolderForm(back, _csrf, parent_id, defautl_name) {
   return {
     nameValid: null,
-    moveTo: "",
     error: "",
     back,
+    moved: false,
     _csrf,
     parent_id,
     defautl_name,
@@ -141,14 +149,7 @@ function modifyFolderForm(back, _csrf, parent_id, defautl_name) {
       })
         .then((res) => {
           if (res.ok) {
-            // folder was not moved so navigate back
-            if (formData.get("move") === this.parent_id) {
-              navigate(`/library?path=/${this.back}`);
-            }
-            // folder was moved so navigate to new location
-            else {
-              navigate(`/library?path=${this.moveTo}`);
-            }
+            navigate(`/library?path=/${this.back}`);
           }
           // load the error message
           else {
@@ -158,10 +159,6 @@ function modifyFolderForm(back, _csrf, parent_id, defautl_name) {
           }
         })
         .catch((e) => console.log(e));
-    },
-
-    setMoveTo(e) {
-      this.moveTo = e.target.selectedOptions[0].getAttribute("t-move-to");
     },
 
     deleteFolder(id) {
@@ -313,6 +310,7 @@ function modifyImageForm(back, _csrf, cropper_src) {
     back,
     _csrf,
     cropper_src,
+    moved: false,
     nameValid: null,
     error: "",
     cropper_show: false,
@@ -337,10 +335,7 @@ function modifyImageForm(back, _csrf, cropper_src) {
     },
 
     showCropper() {
-      this.cropper = new Cropper(this.$refs.cropper, {
-        aspectRatio: 16 / 9,
-        crop(event) {},
-      });
+      this.cropper = new Cropper(this.$refs.cropper, {});
       const { height, width } = this.cropper.getImageData();
       this.cropper.setCropBoxData({ top: 0, left: 0, width, height });
     },
@@ -375,7 +370,7 @@ function modifyImageForm(back, _csrf, cropper_src) {
         formData = new URLSearchParams(formData);
       }
 
-      fetch(`/library/image?crop=${this.image_blob ? true : false}`, {
+      fetch(`/library/image${this.image_blob ? "/crop" : ""}`, {
         method: "PUT",
         headers: { "csrf-token": this._csrf },
         body: formData,

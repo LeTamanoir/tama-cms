@@ -33,6 +33,27 @@
       />
     </div>
 
+    <div class="mb-3 col-md-6">
+      <label for="move" class="form-label">Move image :</label>
+      <select
+        name="move"
+        id="move"
+        class="form-control"
+        autocomplete="off"
+        x-on:change="moved = $event.target.value !== '<%= props.image.parent_id %>'"
+      >
+        <option value="<%= props.image.parent_id %>">Don't move</option>
+
+        <% for(move of props.moveCandidates) { %>
+
+        <option value="<%= move.id %>">
+          => <%= move.name %> (<%= move.path %>)
+        </option>
+
+        <% } %>
+      </select>
+    </div>
+
     <div class="mb-3">
       <div>
         <button
@@ -121,7 +142,7 @@
         type="submit"
         value="Modify"
         class="btn btn-primary"
-        x-bind:class="{ 'disabled': !nameValid && (cropper_show || !image_blob) }"
+        x-bind:class="{ 'disabled': !nameValid && (cropper_show || !image_blob) && !moved }"
       />
     </div>
   </form>

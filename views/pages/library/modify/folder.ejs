@@ -40,13 +40,13 @@
         id="move"
         class="form-control"
         autocomplete="off"
-        x-on:change="setMoveTo"
+        x-on:change="moved = $event.target.value !== '<%= props.folder.parent_id %>'"
       >
         <option value="<%= props.folder.parent_id %>">Don't move</option>
 
         <% for(move of props.moveCandidates) { %>
 
-        <option value="<%= move.id %>" t-move-to="<%= move.path %>">
+        <option value="<%= move.id %>">
           => <%= move.name %> (<%= move.path %>)
         </option>
 
@@ -61,7 +61,7 @@
         type="submit"
         value="Modify"
         class="btn btn-primary"
-        x-bind:class="{ 'disabled': !nameValid && !moveTo }"
+        x-bind:class="{ 'disabled': !nameValid && !moved }"
       />
 
       <button

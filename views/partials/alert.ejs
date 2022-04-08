@@ -1,34 +1,39 @@
 <div x-data="manageAlert()" x-on:alert.window="showAlert">
-  <template x-if="show">
-    <div>
-      <div class="modal fade show" tabindex="-1" style="display: block">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" x-text="title"></h5>
-            </div>
-            <div class="modal-body" x-text="content"></div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                x-on:click="cancelAlert"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                x-on:click="confirmAlert"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
+  <div
+    class="modal fade"
+    x-bind:class="{'show': show }"
+    x-bind:style="show_styles && {'display':'block'}"
+    tabindex="-1"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" x-text="title"></h5>
+        </div>
+        <div class="modal-body" x-text="content"></div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            x-on:click="cancelAlert"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            x-on:click="confirmAlert"
+          >
+            Confirm
+          </button>
         </div>
       </div>
-
-      <div class="modal-backdrop fade show"></div>
     </div>
-  </template>
+  </div>
+
+  <div
+    x-show="show_styles"
+    class="modal-backdrop fade"
+    x-bind:class="{'show': show }"
+  ></div>
 </div>

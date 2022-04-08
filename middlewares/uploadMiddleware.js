@@ -1,7 +1,7 @@
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
-import { checkImageExists, modifyImage } from "../models/libraryModel.js";
+import imageModel from "../models/imageModel.js";
 
 const imageStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -16,13 +16,13 @@ const imageStorage = multer.diskStorage({
         return cb(new Error("Please complete all fields"), null);
       }
 
-      if (!checkImageExists(id)) {
+      if (!imageModel.checkExists(id)) {
         return cb(new Error("Please complete all fields"), null);
       }
 
       let imageName = uuidv4() + ".jpeg";
 
-      modifyImage(name, id, imageName);
+      imageModel.modifyName(name, id, imageName);
       cb(null, imageName);
     }
 
