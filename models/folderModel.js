@@ -78,11 +78,11 @@ export default class FolderModel {
   }
 
   static getFromPath(path) {
-    const folders = libraryDB
+    const folder = libraryDB
       .prepare("select * from `folder` where `path` = @path")
       .get({ path });
 
-    return folders;
+    return folder;
   }
 
   static checkAdd(id, name) {

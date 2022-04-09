@@ -9,15 +9,29 @@ export default class ImageModel {
       .prepare("select * from `image` where `id` = @id")
       .get({ id });
 
+    image.info = JSON.parse(
+      image.info.length !== 0
+        ? image.info
+        : '{"res":{"width":0,"height":0},"ext":"","size":""}'
+    );
+
     return image;
   }
 
-  static getFromPath(path) {
+  static getAllFromPath(path) {
     const images = libraryDB
       .prepare(
         "select * from `image` where `parent_id` = (select `id` from `folder` where `path` = @path)"
       )
       .all({ path });
+
+    images.forEach((image) => {
+      image.info = JSON.parse(
+        image.info.length !== 0
+          ? image.info
+          : '{"res":{"width":0,"height":0},"ext":"","size":""}'
+      );
+    });
 
     return images;
   }
@@ -90,16 +104,6 @@ export default class ImageModel {
       .all({ id });
 
     return moveCandidates;
-  }
-
-  static getAllFromPath(path) {
-    const images = libraryDB
-      .prepare(
-        "select * from `image` where `parent_id` = (select `id` from `folder` where `path` = @path)"
-      )
-      .all({ path });
-
-    return images;
   }
 
   static deleteDisk(id) {

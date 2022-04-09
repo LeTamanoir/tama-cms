@@ -11,7 +11,12 @@
 
   <form
     class="bg-light p-3 rounded border col-12 col-md-6"
-    x-data="modifyFolderForm('<%= props.back %>', '<%= props.csrf %>', '<%= props.folder.parent_id %>', '<%= props.folder.name %>')"
+    x-data="modifyFolderForm({
+      back: '<%= props.back %>',
+      _csrf: '<%= props.csrf %>',
+      parent_id: '<%= props.folder.parent_id %>',
+      default_name: '<%= props.folder.name %>'
+    })"
     x-on:submit.prevent="submit"
   >
     <h4 class="mb-3">Mofidy folder</h4>

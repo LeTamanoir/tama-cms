@@ -11,8 +11,14 @@
 
   <form
     class="bg-light p-3 rounded border"
-    x-data="modifyImageForm('<%= props.back %>', '<%= props.csrf %>', '/uploads/images/<%= props.image.src %>',
-      <%= JSON.parse(props.image?.info || '')?.res?.width / JSON.parse(props.image?.info || '')?.res?.height %>)"
+    x-data="modifyImageForm({
+      back: '<%= props.back %>',
+      _csrf: '<%= props.csrf %>',
+      cropper_src: '/uploads/images/<%= props.image.src %>',
+      resize_height: <%= props.image.info.res.height %>,
+      resize_width: <%= props.image.info.res.width %>,
+      ratio: <%= props.image.info.res.width / props.image.info.res.height %>
+    })"
     x-on:submit.prevent="submit"
   >
     <h4 class="mb-3">Mofidy image</h4>
@@ -63,15 +69,14 @@
         <p class="mb-1">
           Image type :
           <span class="text-muted">
-            <%= JSON.parse(props.image?.info || '')?.ext.replace('.','') %>
+            <%= props.image.info.ext.replace('.','') %>
           </span>
         </p>
 
         <p class="mb-1">
           Dimension :
           <span class="text-muted">
-            <%= Object.values(JSON.parse(props.image?.info ||
-            '')?.res).join('x') %> Pixels
+            <%= Object.values(props.image.info.res ?? []).join('x') %> Pixels
           </span>
         </p>
         <p class="mb-1">
@@ -110,7 +115,11 @@
         <button
           class="btn btn-sm btn-danger"
           x-show="resize_show"
-          x-on:click.prevent="resize_show = false; resize_height = 0; resize_width = 0"
+          x-on:click.prevent="
+            resize_show = false; 
+            resize_height = <%= props.image.info.res.height %>;
+            resize_width = <%= props.image.info.res.width %>
+          "
         >
           Cancel
         </button>
@@ -136,10 +145,10 @@
         <div class="mt-3 col-md-4 border bg-white p-2 rounded">
           <div class="d-flex align-items-center mb-2">
             <input
-              type="number"
+              type="text"
               disabled
               class="mx-2 form-control"
-              value="<%= JSON.parse(props.image?.info || '')?.res?.width %>"
+              value="<%= props.image.info.res.width %>px"
             />
             <i class="bi bi-arrow-right fs-5"></i>
             <input
@@ -153,10 +162,10 @@
 
           <div class="d-flex align-items-center">
             <input
-              type="number"
+              type="text"
               disabled
               class="mx-2 form-control"
-              value="<%= JSON.parse(props.image?.info || '')?.res?.height %>"
+              value="<%= props.image.info.res.height %>px"
             />
             <i class="bi bi-arrow-right fs-5"></i>
             <input

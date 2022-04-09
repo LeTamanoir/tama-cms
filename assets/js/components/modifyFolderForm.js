@@ -1,6 +1,11 @@
 import navigate from "../utils/navigate.js";
 
-export default function modifyFolderForm(back, _csrf, parent_id, defautl_name) {
+export default function modifyFolderForm({
+  back,
+  _csrf,
+  parent_id,
+  defautl_name,
+}) {
   return {
     nameValid: null,
     error: "",
@@ -36,9 +41,7 @@ export default function modifyFolderForm(back, _csrf, parent_id, defautl_name) {
         .then((res) => {
           if (res.ok) {
             navigate(`/library?path=/${this.back}`);
-          }
-          // load the error message
-          else {
+          } else {
             res.json().then((data) => {
               this.error = data.error;
             });
@@ -60,11 +63,13 @@ export default function modifyFolderForm(back, _csrf, parent_id, defautl_name) {
           fetch("/library/folder", {
             method: "DELETE",
             body: formData,
-          }).then((res) => {
-            if (res.ok) {
-              navigate(`/library?path=/${this.back}`);
-            }
-          });
+          })
+            .then((res) => {
+              if (res.ok) {
+                navigate(`/library?path=/${this.back}`);
+              }
+            })
+            .catch((e) => console.log(e));
         },
       });
     },

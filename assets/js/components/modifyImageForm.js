@@ -1,7 +1,14 @@
 import Cropper from "cropperjs";
 import navigate from "../utils/navigate.js";
 
-export default function modifyImageForm(back, _csrf, cropper_src, ratio) {
+export default function modifyImageForm({
+  back,
+  _csrf,
+  cropper_src,
+  ratio,
+  resize_height,
+  resize_width,
+}) {
   return {
     back,
     _csrf,
@@ -14,8 +21,8 @@ export default function modifyImageForm(back, _csrf, cropper_src, ratio) {
     image_blob: null,
     image_preview: "",
     resize_show: false,
-    resize_height: 0,
-    resize_width: 0,
+    resize_height,
+    resize_width,
     ratio,
 
     showCropper() {
@@ -73,19 +80,21 @@ export default function modifyImageForm(back, _csrf, cropper_src, ratio) {
           headers: { "csrf-token": this._csrf },
           body: formData,
         }
-      ).then((res) => {
-        if (res.ok) {
-          navigate(`/library?path=${this.back}`);
-        } else {
-          res.json().then((data) => {
-            this.error = data.error;
+      )
+        .then((res) => {
+          if (res.ok) {
+            navigate(`/library?path=${this.back}`);
+          } else {
+            res.json().then((data) => {
+              this.error = data.error;
 
-            window.setInterval(() => {
-              this.error = "";
-            }, 5000);
-          });
-        }
-      });
+              window.setInterval(() => {
+                this.error = "";
+              }, 5000);
+            });
+          }
+        })
+        .catch((e) => console.log(e));
     },
   };
 }

@@ -110,7 +110,41 @@
               background-image: url('/uploads/images/<%= image.src %>#<%= image.modified_at %>');
             "
             class="card-img-top image-library"
-          ></div>
+            x-data="{ show_info: false }"
+          >
+            <button
+              class="image-info-btn btn px-2 py-0 m-1"
+              x-on:click="show_info = !show_info"
+            >
+              <i class="bi bi-info-circle fs-5"></i>
+            </button>
+
+            <template x-if="show_info">
+              <div class="m-2 p-2 rounded border image-info">
+                <small class="mb-1">
+                  Image type :
+                  <span class="text-muted">
+                    <%= image.info.ext.replace('.','') %>
+                  </span>
+                  <br />
+                  Dimension :
+                  <span class="text-muted">
+                    <%= Object.values(image.info.res ?? []).join('x') %> Pixels
+                  </span>
+                  <br />
+                  Modified :
+                  <span class="text-muted">
+                    <%= new Date(image.modified_at).toLocaleString('fr') %>
+                  </span>
+                  <br />
+                  Added :
+                  <span class="text-muted">
+                    <%= new Date(image.created_at).toLocaleString('fr') %>
+                  </span>
+                </small>
+              </div>
+            </template>
+          </div>
 
           <div class="card-body">
             <h5 class="card-title mb-3 d-flex align-items-center">
@@ -118,10 +152,10 @@
 
               <%= image.name %>
               <small class="ms-1 text-muted fw-normal fs-6">
-                <%= JSON.parse(image?.info || '')?.ext %>
+                <%= image.info.ext %>
               </small>
               <small class="ms-auto text-muted fw-normal fs-6">
-                <%= JSON.parse(image?.info || '')?.size %>
+                <%= image.info.size %>
               </small>
             </h5>
 
