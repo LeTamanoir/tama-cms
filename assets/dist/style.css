@@ -38,7 +38,7 @@
   width: 100%;
   height: 12rem;
 }
-.image-library:hover .image-info-btn {
+.image-library:hover .image-info-btn:not(.active) {
   opacity: 1;
 }
 
@@ -46,10 +46,16 @@
   outline: none !important;
   box-shadow: none !important;
   transition: all 0.2s ease;
+}
+.image-info-btn.active {
+  opacity: 1;
+  background-color: rgb(255, 255, 255) !important;
+}
+.image-info-btn:not(.active) {
   opacity: 0;
   background-color: rgba(255, 255, 255, 0.5) !important;
 }
-.image-info-btn:hover {
+.image-info-btn:not(.active):hover {
   background-color: rgb(255, 255, 255) !important;
 }
 

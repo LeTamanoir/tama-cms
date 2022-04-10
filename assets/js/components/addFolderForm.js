@@ -1,6 +1,6 @@
 import navigate from "../utils/navigate.js";
 
-export default function addFolderForm(path) {
+export default function addFolderForm({ path }) {
   return {
     error: "",
     nameValid: null,

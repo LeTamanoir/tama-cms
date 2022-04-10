@@ -1,6 +1,6 @@
 import navigate from "../utils/navigate.js";
 
-export default function movableGrid(_csrf, path) {
+export default function movableGrid({ _csrf, path }) {
   return {
     current: null,
     current_name: "",

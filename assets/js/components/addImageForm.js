@@ -1,6 +1,6 @@
 import navigate from "../utils/navigate.js";
 
-export default function addImageForm(path, _csrf) {
+export default function addImageForm({ path, _csrf }) {
   return {
     imageData: "",
     error: "",

@@ -20,7 +20,10 @@
   </nav>
 
   <div
-    x-data="movableGrid('<%= props.csrf %>', '<%= props.path.join('/') %>')"
+    x-data="movableGrid({
+      _csrf: '<%= props.csrf %>',
+      path: '<%= props.path.join('/') %>'
+    })"
     x-on:dragend.prevent="
       dragging = false;
       current = '';
@@ -113,10 +116,12 @@
             x-data="{ show_info: false }"
           >
             <button
-              class="image-info-btn btn px-2 py-0 m-1"
+              class="image-info-btn btn px-2 py-0 m-2"
+              x-bind:class="{'active': show_info }"
               x-on:click="show_info = !show_info"
             >
-              <i class="bi bi-info-circle fs-5"></i>
+              <i class="bi bi-info-circle fs-5" x-show="!show_info"></i>
+              <i class="bi bi-x fs-5" x-show="show_info"></i>
             </button>
 
             <template x-if="show_info">

@@ -11,7 +11,10 @@
 
   <form
     class="bg-light p-3 rounded border col-12 col-md-6"
-    x-data="addImageForm('<%= props.path %>', '<%= props.csrf %>')"
+    x-data="addImageForm({ 
+      path: '<%= props.path %>',
+      _csrf: '<%= props.csrf %>'
+    })"
     x-on:submit.prevent="submit"
   >
     <h4 class="mb-3">Add image</h4>
