@@ -6,7 +6,7 @@ export default class FolderModel {
   static add(name, path, parent_id) {
     libraryDB
       .prepare(
-        "insert into `folder` (`name`, `path`, `parent_id`) values (@name, @path, @parent_id)"
+        "INSERT into folder (name, path, parent_id) VALUES (@name, @path, @parent_id)"
       )
       .run({
         name,
@@ -17,7 +17,7 @@ export default class FolderModel {
 
   static get(id) {
     const folder = libraryDB
-      .prepare("select * from `folder` where `id` = @id")
+      .prepare("SELECT * FROM folder WHERE id = @id")
       .get({ id });
 
     return folder;
@@ -25,14 +25,14 @@ export default class FolderModel {
 
   static move(id, move) {
     libraryDB
-      .prepare("update `folder` set `parent_id` = @move where `id` = @id")
+      .prepare("UPDATE folder SET parent_id = @move WHERE id = @id")
       .run({ move, id });
   }
 
   static delete(id) {
     const subFolders = libraryDB
       .prepare(
-        "select * from `folder` where `path` like (select `path` from `folder` where `id` = @id)||'/%' or `id` = @id"
+        "SELECT * FROM folder WHERE path LIKE (SELECT path FROM folder WHERE id = @id)||'/%' OR id = @id"
       )
       .all({ id });
 
@@ -45,14 +45,14 @@ export default class FolderModel {
 
     libraryDB
       .prepare(
-        "delete from `folder` where `path` like (select `path` from `folder` where `id` = @id)||'/%' or `id` = @id"
+        "DELETE FROM folder WHERE path LIKE (SELECT path FROM folder WHERE id = @id)||'/%' OR id = @id"
       )
       .run({ id });
   }
 
   static checkExists(id) {
     const check = libraryDB
-      .prepare("select `id` from `folder` where `id` = @id")
+      .prepare("SELECT id FROM folder WHERE id = @id")
       .get({ id });
 
     return !!check?.id;
@@ -60,7 +60,7 @@ export default class FolderModel {
 
   static checkPathExists(path) {
     const check = libraryDB
-      .prepare("select `id` from `folder` where `path` = @path")
+      .prepare("SELECT id FROM folder WHERE path = @path")
       .get({ path });
 
     return !!check?.id;
@@ -69,8 +69,8 @@ export default class FolderModel {
   static checkRename(id, name) {
     let check = libraryDB
       .prepare(
-        "select `id` from `folder` where `parent_id` = (select `parent_id` from `folder` where `id` = @id)" +
-          " and `name` = @name and `id` != @id"
+        "SELECT id FROM folder WHERE parent_id = (SELECT parent_id FROM folder WHERE id = @id)" +
+          " and name = @name and id != @id"
       )
       .get({ id, name });
 
@@ -79,7 +79,7 @@ export default class FolderModel {
 
   static getFromPath(path) {
     const folder = libraryDB
-      .prepare("select * from `folder` where `path` = @path")
+      .prepare("SELECT * FROM folder WHERE path = @path")
       .get({ path });
 
     return folder;
@@ -87,9 +87,7 @@ export default class FolderModel {
 
   static checkAdd(id, name) {
     let check = libraryDB
-      .prepare(
-        "select `id` from `folder` where `name` = @name and `parent_id` = @id"
-      )
+      .prepare("SELECT id FROM folder WHERE name = @name and parent_id = @id")
       .get({ id, name });
 
     return !check?.id;
@@ -97,15 +95,15 @@ export default class FolderModel {
 
   static modifyName(id, name) {
     libraryDB
-      .prepare("update `folder` set `name` = @name where `id` = @id")
+      .prepare("UPDATE folder SET name = @name WHERE id = @id")
       .run({ id, name });
   }
 
   static checkMoveCandidate(id, move, name) {
     let check = libraryDB
       .prepare(
-        "select * from `folder` where `path` not like (select `path` from `folder` where `id` = @id)||'/%'" +
-          " and `id` = @move and not exists (select 1 from `folder` where `parent_id` = @move and `name` = @name)"
+        "SELECT * FROM folder WHERE path NOT LIKE (SELECT path FROM folder WHERE id = @id)||'/%'" +
+          " and id = @move and NOT EXISTS (SELECT 1 FROM folder WHERE parent_id = @move and name = @name)"
       )
       .get({ id, name, move });
 
@@ -114,18 +112,18 @@ export default class FolderModel {
 
   static generatePath(id, move, name) {
     let oldPath = libraryDB
-      .prepare("select `path` from `folder` where `id` = @id")
+      .prepare("SELECT path FROM folder WHERE id = @id")
       .get({ id }).path;
 
     let _path = libraryDB
-      .prepare("select `path` from `folder` where `id` = @move")
+      .prepare("SELECT path FROM folder WHERE id = @move")
       .get({ move }).path;
 
     let newPath = (_path !== "/" ? _path + "/" : "/") + name;
 
     libraryDB
       .prepare(
-        "update `folder` set `path` = replace(`path`, @oldPath, @newPath) where `path` like @oldPath||'/%' or `path` = @oldPath"
+        "UPDATE folder SET path = REPLACE(path, @oldPath, @newPath) WHERE path LIKE @oldPath||'/%' OR path = @oldPath"
       )
       .run({ newPath, oldPath, id });
   }
@@ -133,8 +131,8 @@ export default class FolderModel {
   static getMoveCandidates(id) {
     const moveCandidates = libraryDB
       .prepare(
-        "select * from `folder` where `path` not like (select `path` from `folder` where `id` = @id)||'/%'" +
-          " and `id` != (select `parent_id` from `folder` where `id` = @id) and `id` != @id"
+        "SELECT * FROM folder WHERE path NOT LIKE (SELECT path FROM folder WHERE id = @id)||'/%'" +
+          " and id != (SELECT parent_id FROM folder WHERE id = @id) and id != @id"
       )
       .all({ id });
     return moveCandidates;
@@ -143,7 +141,7 @@ export default class FolderModel {
   static getAllFromPath(path) {
     const folders = libraryDB
       .prepare(
-        "select * from `folder` where `parent_id` = (select `id` from `folder` where `path` = @path)"
+        "SELECT * FROM folder WHERE parent_id = (SELECT id FROM folder WHERE path = @path)"
       )
       .all({ path });
 
@@ -153,7 +151,7 @@ export default class FolderModel {
   static getParent(path) {
     const folder = libraryDB
       .prepare(
-        "select * from `folder` where `id` = (select `parent_id` from `folder` where `path` = @path)"
+        "SELECT * FROM folder WHERE id = (SELECT parent_id FROM folder WHERE path = @path)"
       )
       .get({
         path,

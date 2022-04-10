@@ -4,7 +4,7 @@ const userDB = new sqlite("database/user.db", {});
 export default class UserModel {
   static getFromName(username) {
     const user = userDB
-      .prepare("select * from `user` where `username` = @username")
+      .prepare("SELECT * FROM user WHERE username = @username")
       .get({ username });
 
     return user;

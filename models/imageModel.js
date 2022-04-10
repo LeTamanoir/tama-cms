@@ -6,14 +6,14 @@ const libraryDB = new sqlite("database/library.db", {});
 export default class ImageModel {
   static get(id) {
     const image = libraryDB
-      .prepare("select * from `image` where `id` = @id")
+      .prepare("SELECT * FROM image WHERE id = @id")
       .get({ id });
 
-    image.info = JSON.parse(
-      image.info.length !== 0
-        ? image.info
-        : '{"res":{"width":0,"height":0},"ext":"","size":""}'
-    );
+    if (image.info.length !== 0) {
+      image.info = JSON.parse(image.info);
+    } else {
+      image.info = { res: { width: 0, height: 0 }, ext: "", size: "" };
+    }
 
     return image;
   }
@@ -21,16 +21,16 @@ export default class ImageModel {
   static getAllFromPath(path) {
     const images = libraryDB
       .prepare(
-        "select * from `image` where `parent_id` = (select `id` from `folder` where `path` = @path)"
+        "SELECT * FROM image WHERE parent_id = (SELECT id FROM folder WHERE path = @path)"
       )
       .all({ path });
 
     images.forEach((image) => {
-      image.info = JSON.parse(
-        image.info.length !== 0
-          ? image.info
-          : '{"res":{"width":0,"height":0},"ext":"","size":""}'
-      );
+      if (image.info.length !== 0) {
+        image.info = JSON.parse(image.info);
+      } else {
+        image.info = { res: { width: 0, height: 0 }, ext: "", size: "" };
+      }
     });
 
     return images;
@@ -39,8 +39,8 @@ export default class ImageModel {
   static add(name, path, info, parent_id) {
     libraryDB
       .prepare(
-        "insert into `image` ('name', 'src', 'info', 'parent_id', 'created_at', 'modified_at') " +
-          "values (@name, @src, @info, @parent_id, @created_at, @modified_at)"
+        "INSERT into image ('name', 'src', 'info', 'parent_id', 'created_at', 'modified_at') " +
+          "VALUES (@name, @src, @info, @parent_id, @created_at, @modified_at)"
       )
       .run({
         name,
@@ -54,19 +54,19 @@ export default class ImageModel {
 
   static move(id, move) {
     libraryDB
-      .prepare("update `image` set `parent_id` = @move where `id` = @id")
+      .prepare("UPDATE image SET parent_id = @move WHERE id = @id")
       .run({ id, move });
   }
 
   static delete(id) {
     this.deleteDisk(id);
 
-    libraryDB.prepare("delete from `image` where `id` = @id").run({ id });
+    libraryDB.prepare("DELETE FROM image WHERE id = @id").run({ id });
   }
 
   static checkExists(id) {
     let check = libraryDB
-      .prepare("select * from `image` where `id` = @id")
+      .prepare("SELECT * FROM image WHERE id = @id")
       .get({ id });
 
     return !!check?.id;
@@ -75,7 +75,7 @@ export default class ImageModel {
   static modifyName(name, id) {
     libraryDB
       .prepare(
-        "update `image` set `name` = @name, `modified_at` = @modified where `id` = @id"
+        "UPDATE image SET name = @name, modified_at = @modified WHERE id = @id"
       )
       .run({ name, modified: new Date().getTime(), id });
   }
@@ -85,7 +85,7 @@ export default class ImageModel {
 
     libraryDB
       .prepare(
-        "update `image` set `name` = @name, `src` = @newSrc, `info` = @info, `modified_at` = @modified where `id` = @id"
+        "UPDATE image SET name = @name, src = @newSrc, info = @info, modified_at = @modified WHERE id = @id"
       )
       .run({
         name,
@@ -99,7 +99,7 @@ export default class ImageModel {
   static getMoveCandidates(id) {
     const moveCandidates = libraryDB
       .prepare(
-        "select * from `folder` where `id` != (select `parent_id` from `image` where `id` = @id)"
+        "SELECT * FROM folder WHERE id != (SELECT parent_id FROM image WHERE id = @id)"
       )
       .all({ id });
 
@@ -108,7 +108,7 @@ export default class ImageModel {
 
   static deleteDisk(id) {
     let { src } = libraryDB
-      .prepare("select * from `image` where `id` = @id")
+      .prepare("SELECT * FROM image WHERE id = @id")
       .get({ id });
 
     try {
